@@ -1,0 +1,5 @@
+1. change enemy_roster_ from a vector to a map
+2. in identify_enemy look up the enemy info and set it to the enemy
+3. setup shotcalls for 2 minutes from identification
+4. i dont think that a death needs to waste compute on removing from shot call queue
+    have the engine check if enemy is alive when popping from the queue
