@@ -1,7 +1,6 @@
 #include "parser.h"
 
-std::chrono::time_point<std::chrono::system_clock> parse_timestamp(const std::string& timestamp)
-{
+std::chrono::time_point<std::chrono::system_clock> parse_timestamp(const std::string& timestamp) {
     size_t time_zone_pos = timestamp.find_last_of("+-");
     if (time_zone_pos == std::string::npos) {
         return {};
@@ -30,8 +29,7 @@ std::chrono::time_point<std::chrono::system_clock> parse_timestamp(const std::st
     return time_point;
 }
 
-CombatEvent parse_line(const std::string& line)
-{
+CombatEvent parse_line(const std::string& line) {
     if (line.empty())
         return CombatEvent{};
 

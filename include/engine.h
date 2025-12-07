@@ -14,41 +14,35 @@
 
 #include "parser.h"
 
-struct AbilityState
-{
+struct AbilityState {
     int id;
     std::chrono::seconds cooldown;
     std::chrono::time_point<std::chrono::system_clock> on_cooldown_until{};
 
-    AbilityState(int id, std::chrono::seconds cooldown) : id{ id }, cooldown{ cooldown }
-    {
+    AbilityState(int id, std::chrono::seconds cooldown) : id{ id }, cooldown{ cooldown } {
     }
-    AbilityState() : id(0), cooldown(std::chrono::seconds(0))
-    {
+    AbilityState() : id(0), cooldown(std::chrono::seconds(0)) {
     }
 };
 
-struct EnemyAbility
-{
+struct EnemyAbility {
     int id;
     std::chrono::milliseconds first_cast;
     std::chrono::milliseconds cooldown;
     std::string callout;
     bool is_interruptable;
 
-    EnemyAbility(int id, std::chrono::milliseconds first_cast, std::chrono::milliseconds cooldown,
-                 std::string callout, bool is_interruptable)
+    EnemyAbility(int id, std::chrono::milliseconds first_cast, std::chrono::milliseconds cooldown, std::string callout,
+                 bool is_interruptable)
         : id{ id },
           first_cast{ first_cast },
           cooldown{ cooldown },
           callout{ callout },
-          is_interruptable{ is_interruptable }
-    {
+          is_interruptable{ is_interruptable } {
     }
 };
 
-struct Player
-{
+struct Player {
     std::string id;
     std::string name;
     std::string p_class;
@@ -62,15 +56,13 @@ struct Player
           name{ std::move(name) },
           p_class{ std::move(p_class) },
           interrupt{ interrupt },
-          crowd_control{ std::move(crowd_control) }
-    {
+          crowd_control{ std::move(crowd_control) } {
     }
 
     Player() = default;
 };
 
-struct Enemy
-{
+struct Enemy {
     std::string id;
     std::vector<EnemyAbility> spells;
     std::chrono::time_point<std::chrono::system_clock> combat_start_time;
@@ -81,13 +73,11 @@ struct Enemy
         : id{ std::move(id) },
           spells{ std::move(spells) },
           combat_start_time{ combat_start_time },
-          is_ccable{ is_ccable }
-    {
+          is_ccable{ is_ccable } {
     }
 };
 
-class ShotCallEngine
-{
+class ShotCallEngine {
    public:
     void handle_event(const CombatEvent& event);
     void handle_player_event(const CombatEvent& event);
@@ -104,8 +94,7 @@ class ShotCallEngine
     std::map<std::string, std::map<int, AbilityState>> roster_crowd_control_{};
     std::chrono::time_point<std::chrono::system_clock> current_time_{};
     std::map<std::string, Enemy> enemy_roster_{};
-    std::list<
-        std::tuple<std::string, std::string, std::chrono::time_point<std::chrono::system_clock>>>
+    std::list<std::tuple<std::string, std::string, std::chrono::time_point<std::chrono::system_clock>>>
         shot_call_queue_{};
 };
 #endif  // SHOTCALLERCPP_ENGINE_H

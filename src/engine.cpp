@@ -11,8 +11,7 @@ bool is_crowd_control(int spell_id);
 std::chrono::seconds get_crowd_control_cooldown(int spell_id);
 std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class);
 
-constexpr unsigned int hash_str(const std::string_view s)
-{
+constexpr unsigned int hash_str(const std::string_view s) {
     unsigned int hashed = 0;
 
     for (char c : s)
@@ -21,13 +20,11 @@ constexpr unsigned int hash_str(const std::string_view s)
     return hashed;
 }
 
-bool is_cast_by_party_member(const CombatEvent& event)
-{
+bool is_cast_by_party_member(const CombatEvent& event) {
     return event.source_raid_flag == "0x511" || event.source_raid_flag == "0x1511";
 }
 
-void ShotCallEngine::handle_event(const CombatEvent& event)
-{
+void ShotCallEngine::handle_event(const CombatEvent& event) {
     if (is_cast_by_party_member(event)) {
         handle_player_event(event);
     } else {
@@ -35,13 +32,11 @@ void ShotCallEngine::handle_event(const CombatEvent& event)
     }
 }
 
-void ShotCallEngine::handle_death(const CombatEvent& event)
-{
+void ShotCallEngine::handle_death(const CombatEvent& event) {
     // remove shot calls placed in queue for dead enemy
 }
 
-void ShotCallEngine::handle_player_event(const CombatEvent& event)
-{
+void ShotCallEngine::handle_player_event(const CombatEvent& event) {
     if (is_ignorable_event(event.event_type))
         return;
 
@@ -71,8 +66,7 @@ void ShotCallEngine::handle_player_event(const CombatEvent& event)
     }
 }
 
-void ShotCallEngine::handle_enemy_event(const CombatEvent& event)
-{
+void ShotCallEngine::handle_enemy_event(const CombatEvent& event) {
     auto iter = enemy_roster_.find(event.source_id);
     if (iter == enemy_roster_.end()) {
         identify_enemy(event);
@@ -80,252 +74,7 @@ void ShotCallEngine::handle_enemy_event(const CombatEvent& event)
     }
 }
 
-void ShotCallEngine::identify_enemy(const CombatEvent& event)
-{
-    static const std::map<std::string, Enemy> enemy_db{
-        // Eco-dome--------------------------------------------------------------------------------
-        { "245092", Enemy("245092",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1215850, std::chrono::milliseconds(20000),
-                                           std::chrono::milliseconds(37000), "AoE", false) },
-                          {}, true) },
-        { "234883", Enemy("234883",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1221152, std::chrono::milliseconds(6500),
-                                           std::chrono::milliseconds(18200), "AoE", false) },
-                          {}, true) },
-        { "242631", Enemy("242631",
-                          std::vector<EnemyAbility>{ EnemyAbility(
-                              1235368, std::chrono::milliseconds(6900),
-                              std::chrono::milliseconds(15800), "Tank Frontal", false) },
-                          {}, true) },
-        { "236995", Enemy("236995",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1226111, std::chrono::milliseconds(15000),
-                                           std::chrono::milliseconds(20600), "Ejection", false) },
-                          {}, true) },
-        { "234957", Enemy("234957",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1221483, std::chrono::milliseconds(15000),
-                                           std::chrono::milliseconds(20600), "Dispel", false) },
-                          {}, true) },
-        { "234962", Enemy("234962",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1221679, std::chrono::milliseconds(6000),
-                                           std::chrono::milliseconds(13300), "Leap", false) },
-                          {}, true) },
-        // Tazavesh--------------------------------------------------------------------------------
-        { "180567", Enemy("180567",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(357827, std::chrono::milliseconds(5000),
-                                           std::chrono::milliseconds(17000), "Leap", false) },
-                          {}, true) },
-        { "246285", Enemy("246285",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1240912, std::chrono::milliseconds(14300),
-                                           std::chrono::milliseconds(23000), "Buster", false),
-                              EnemyAbility(1240821, std::chrono::milliseconds(8000),
-                                           std::chrono::milliseconds(23000), "Spread", false) },
-                          {}, true) },
-        { "178165", Enemy("178165",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(355429, std::chrono::milliseconds(11300),
-                                           std::chrono::milliseconds(23000), "AOE", false) },
-                          {}, true) },
-        { "178141", Enemy("178141",
-                          std::vector<EnemyAbility>{ EnemyAbility(
-                              355132, std::chrono::milliseconds(9700),
-                              std::chrono::milliseconds(27900), "Fish sticks", false) },
-                          {}, true) },
-        { "180429", Enemy("180429",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(357238, std::chrono::milliseconds(13600),
-                                           std::chrono::milliseconds(26700), "Pulsar", false) },
-                          {}, true) },
-        { "179386", Enemy("179386",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(368661, std::chrono::milliseconds(8300),
-                                           std::chrono::milliseconds(14500), "Toss", false) },
-                          {}, true) },
-        { "177716", Enemy("177716",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(351119, std::chrono::milliseconds(8000),
-                                           std::chrono::milliseconds(18200), "Tee Pee", true) },
-                          {}, true) },
-        { "177816", Enemy("177816",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(355915, std::chrono::milliseconds(7300),
-                                           std::chrono::milliseconds(17000), "Dispel", false) },
-                          {}, true) },
-        { "180431", Enemy("180431",
-                          std::vector<EnemyAbility>{ EnemyAbility(
-                              357260, std::chrono::milliseconds(13300),
-                              std::chrono::milliseconds(21800), "Unstable Rift", true) },
-                          {}, true) },
-
-        // Halls of Attonement---------------------------------------------------------------------
-        { "164557", Enemy("164557",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(326409, std::chrono::milliseconds(8900),
-                                           std::chrono::milliseconds(23000), "AOE", false) },
-                          {}, true) },
-        { "167607", Enemy("167607",
-                          std::vector<EnemyAbility>{ EnemyAbility(
-                              1235326, std::chrono::milliseconds(15900),
-                              std::chrono::milliseconds(32800), "Stop casting", false) },
-                          {}, true) },
-        { "164562", Enemy("164562",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(326450, std::chrono::milliseconds(15300),
-                                           std::chrono::milliseconds(24200), "Loyal Beast", true) },
-                          {}, true) },
-        { "165414", Enemy("165414",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(325876, std::chrono::milliseconds(9700),
-                                           std::chrono::milliseconds(24200), "Dispel", false) },
-                          {}, true) },
-
-        // Floodgate-------------------------------------------------------------------------------
-        { "230748", Enemy("230748",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(465827, std::chrono::milliseconds(6800),
-                                           std::chrono::milliseconds(19400), "Warp blood", false) },
-                          {}, true) },
-        { "231014", Enemy("231014",
-                          std::vector<EnemyAbility>{ EnemyAbility(
-                              465120, std::chrono::milliseconds(8300),
-                              std::chrono::milliseconds(17000), "Loaderbots spinning", false) },
-                          {}, true) },
-
-        // Dawnbreaker-----------------------------------------------------------------------------
-        { "214761", Enemy("214761",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(432448, std::chrono::milliseconds(8300),
-                                           std::chrono::milliseconds(23000), "Seed", false),
-                              EnemyAbility(431364, std::chrono::milliseconds(3300),
-                                           std::chrono::milliseconds(10900), "Ray", false) },
-                          {}, true) },
-        { "210966", Enemy("210966",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(451107, std::chrono::milliseconds(4900),
-                                           std::chrono::milliseconds(20600), "Cocoon", false) },
-                          {}, true) },
-        { "228540", Enemy("228540",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(431309, std::chrono::milliseconds(12400),
-                                           std::chrono::milliseconds(23000), "Curse", false) },
-                          {}, true) },
-        { "213892", Enemy("213892",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(431309, std::chrono::milliseconds(12400),
-                                           std::chrono::milliseconds(23000), "Curse", false) },
-                          {}, true) },
-        { "211261", Enemy("211261",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(451102, std::chrono::milliseconds(14300),
-                                           std::chrono::milliseconds(27800), "Aoe", false),
-                              EnemyAbility(451119, std::chrono::milliseconds(8300),
-                                           std::chrono::milliseconds(12100), "Dot", false) },
-                          {}, true) },
-        { "211262", Enemy("211262",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(451119, std::chrono::milliseconds(3900),
-                                           std::chrono::milliseconds(12100), "Dot", false) },
-                          {}, true) },
-        { "211263", Enemy("211263",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(451119, std::chrono::milliseconds(4900),
-                                           std::chrono::milliseconds(12100), "Dot", false),
-                              EnemyAbility(450854, std::chrono::milliseconds(12100),
-                                           std::chrono::milliseconds(24300), "Orb", false) },
-                          {}, true) },
-
-        // Ara-kara--------------------------------------------------------------------------------
-        { "216293", Enemy("216293",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(434793, std::chrono::milliseconds(4000),
-                                           std::chrono::milliseconds(16900), "AoE Barrage", true) },
-                          {}, true) },
-        { "217531", Enemy("217531",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(434802, std::chrono::milliseconds(9600),
-                                           std::chrono::milliseconds(20800), "Fear", true) },
-                          {}, true) },
-        { "218324", Enemy("218324",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(438877, std::chrono::milliseconds(12100),
-                                           std::chrono::milliseconds(21900), "AoE", false) },
-                          {}, true) },
-        { "216338", Enemy("216338",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(1241693, std::chrono::milliseconds(6000),
-                                           std::chrono::milliseconds(30300), "AoE", false) },
-                          {}, true) },
-        { "223253", Enemy("223253",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(448248, std::chrono::milliseconds(4800),
-                                           std::chrono::milliseconds(20600), "Volley", true) },
-                          {}, true) },
-        { "216364", Enemy("216364",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(433841, std::chrono::milliseconds(5800),
-                                           std::chrono::milliseconds(19000), "Volley", true) },
-                          {}, true) },
-        // Priory of the Sacred Flame--------------------------------------------------------------
-        { "206696",
-          Enemy("206696",
-                std::vector<EnemyAbility>{
-                    EnemyAbility(427609, std::chrono::milliseconds(20400),
-                                 std::chrono::milliseconds(23000), "Stop casting", false),
-                    EnemyAbility(427621, std::chrono::milliseconds(3800),
-                                 std::chrono::milliseconds(15700), "Impale bleed", false) },
-                {}, true) },
-        { "221760", Enemy("221760",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(444743, std::chrono::milliseconds(9500),
-                                           std::chrono::milliseconds(24300), "Volley", true) },
-                          {}, true) },
-        { "212826", Enemy("212826",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(448485, std::chrono::milliseconds(5900),
-                                           std::chrono::milliseconds(12100), "Tank Buster", false),
-                              EnemyAbility(448492, std::chrono::milliseconds(14700),
-                                           std::chrono::milliseconds(15700), "AoE", false) },
-                          {}, true) },
-        { "212831", Enemy("212831",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(427897, std::chrono::milliseconds(10800),
-                                           std::chrono::milliseconds(18200), "AoE", false) },
-                          {}, true) },
-        { "239833", Enemy("239833",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(424431, std::chrono::milliseconds(26100),
-                                           std::chrono::milliseconds(37600), "AoE", false) },
-                          {}, true) },
-        { "206704", Enemy("206704",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(448791, std::chrono::milliseconds(15500),
-                                           std::chrono::milliseconds(21700), "AoE", false) },
-                          {}, true) },
-        { "206699", Enemy("206699",
-                          std::vector<EnemyAbility>{
-                              EnemyAbility(446776, std::chrono::milliseconds(7000),
-                                           std::chrono::milliseconds(15800), "Leap bleed", false) },
-                          {}, true) },
-    };
-
-    auto iter = enemy_db.find(event.name);
-    if (iter == enemy_db.end())
-        return;
-
-    auto new_enemy = iter->second;
-    new_enemy.combat_start_time = event.time_stamp;
-    enemy_roster_.emplace(event.source_id, new_enemy);
-    ShotCallEngine::generate_shotcalls(new_enemy);
-}
-
-void ShotCallEngine::generate_shotcalls(Enemy& enemy)
-{
+void ShotCallEngine::generate_shotcalls(Enemy& enemy) {
     // this will generate shot calls for the next 5 minutes for each individual enemy
     for (auto spell : enemy.spells) {
         long long cd = spell.cooldown.count();
@@ -334,16 +83,15 @@ void ShotCallEngine::generate_shotcalls(Enemy& enemy)
 
         for (size_t i = 1; i <= iterations; ++i) {
             auto duration = std::chrono::milliseconds(i * spell.cooldown);
-            std::tuple<std::string, std::string, std::chrono::time_point<std::chrono::system_clock>>
-                shotcall{ std::make_tuple(enemy.id, enemy.spells[i].callout,
-                                          (enemy.combat_start_time + duration * i)) };
+            std::tuple<std::string, std::string, std::chrono::time_point<std::chrono::system_clock>> shotcall{
+                std::make_tuple(enemy.id, enemy.spells[i].callout, (enemy.combat_start_time + duration * i))
+            };
             shot_call_queue_.push_back(shotcall);
         }
     }
 }
 
-void ShotCallEngine::identify_player(const CombatEvent& event)
-{
+void ShotCallEngine::identify_player(const CombatEvent& event) {
     std::string p_class = get_player_class(event.spell_id);
     int interrupt_id = get_interrupt_id(p_class);
     std::chrono::seconds interrupt_cooldown = get_interrupt_cooldown(interrupt_id);
@@ -360,8 +108,231 @@ void ShotCallEngine::identify_player(const CombatEvent& event)
     new_player.is_alive = true;
 }
 
-std::string ShotCallEngine::get_player_class(int spell_id)
-{
+bool is_battle_rez(int spell_id) {
+    static const std::unordered_set<int> battle_rez_ids = {
+        10609, 376999, 20707, 61999, 407133,
+    };
+
+    if (battle_rez_ids.find(spell_id) != battle_rez_ids.end()) {
+        return true;
+    } else {
+        return false;
+    }
+}
+void ShotCallEngine::identify_enemy(const CombatEvent& event) {
+    static const std::map<std::string, Enemy> enemy_db{
+        // Eco-dome----------------------------------------------------------------------------------------------------
+        { "245092", Enemy("245092",
+                          std::vector<EnemyAbility>{ EnemyAbility(1215850, std::chrono::milliseconds(20000),
+                                                                  std::chrono::milliseconds(37000), "AoE", false) },
+                          {}, true) },
+        { "234883", Enemy("234883",
+                          std::vector<EnemyAbility>{ EnemyAbility(1221152, std::chrono::milliseconds(6500),
+                                                                  std::chrono::milliseconds(18200), "AoE", false) },
+                          {}, true) },
+        { "242631",
+          Enemy("242631",
+                std::vector<EnemyAbility>{ EnemyAbility(1235368, std::chrono::milliseconds(6900),
+                                                        std::chrono::milliseconds(15800), "Tank Frontal", false) },
+                {}, true) },
+        { "236995",
+          Enemy("236995",
+                std::vector<EnemyAbility>{ EnemyAbility(1226111, std::chrono::milliseconds(15000),
+                                                        std::chrono::milliseconds(20600), "Ejection", false) },
+                {}, true) },
+        { "234957", Enemy("234957",
+                          std::vector<EnemyAbility>{ EnemyAbility(1221483, std::chrono::milliseconds(15000),
+                                                                  std::chrono::milliseconds(20600), "Dispel", false) },
+                          {}, true) },
+        { "234962", Enemy("234962",
+                          std::vector<EnemyAbility>{ EnemyAbility(1221679, std::chrono::milliseconds(6000),
+                                                                  std::chrono::milliseconds(13300), "Leap", false) },
+                          {}, true) },
+        // Tazavesh----------------------------------------------------------------------------------------------------
+        { "180567", Enemy("180567",
+                          std::vector<EnemyAbility>{ EnemyAbility(357827, std::chrono::milliseconds(5000),
+                                                                  std::chrono::milliseconds(17000), "Leap", false) },
+                          {}, true) },
+        { "246285", Enemy("246285",
+                          std::vector<EnemyAbility>{ EnemyAbility(1240912, std::chrono::milliseconds(14300),
+                                                                  std::chrono::milliseconds(23000), "Buster", false),
+                                                     EnemyAbility(1240821, std::chrono::milliseconds(8000),
+                                                                  std::chrono::milliseconds(23000), "Spread", false) },
+                          {}, true) },
+        { "178165", Enemy("178165",
+                          std::vector<EnemyAbility>{ EnemyAbility(355429, std::chrono::milliseconds(11300),
+                                                                  std::chrono::milliseconds(23000), "AOE", false) },
+                          {}, true) },
+        { "178141",
+          Enemy("178141",
+                std::vector<EnemyAbility>{ EnemyAbility(355132, std::chrono::milliseconds(9700),
+                                                        std::chrono::milliseconds(27900), "Fish sticks", false) },
+                {}, true) },
+        { "180429", Enemy("180429",
+                          std::vector<EnemyAbility>{ EnemyAbility(357238, std::chrono::milliseconds(13600),
+                                                                  std::chrono::milliseconds(26700), "Pulsar", false) },
+                          {}, true) },
+        { "179386", Enemy("179386",
+                          std::vector<EnemyAbility>{ EnemyAbility(368661, std::chrono::milliseconds(8300),
+                                                                  std::chrono::milliseconds(14500), "Toss", false) },
+                          {}, true) },
+        { "177716", Enemy("177716",
+                          std::vector<EnemyAbility>{ EnemyAbility(351119, std::chrono::milliseconds(8000),
+                                                                  std::chrono::milliseconds(18200), "Tee Pee", true) },
+                          {}, true) },
+        { "177816", Enemy("177816",
+                          std::vector<EnemyAbility>{ EnemyAbility(355915, std::chrono::milliseconds(7300),
+                                                                  std::chrono::milliseconds(17000), "Dispel", false) },
+                          {}, true) },
+        { "180431",
+          Enemy("180431",
+                std::vector<EnemyAbility>{ EnemyAbility(357260, std::chrono::milliseconds(13300),
+                                                        std::chrono::milliseconds(21800), "Unstable Rift", true) },
+                {}, true) },
+
+        // Halls of Attonement-----------------------------------------------------------------------------------------
+        { "164557", Enemy("164557",
+                          std::vector<EnemyAbility>{ EnemyAbility(326409, std::chrono::milliseconds(8900),
+                                                                  std::chrono::milliseconds(23000), "AOE", false) },
+                          {}, true) },
+        { "167607",
+          Enemy("167607",
+                std::vector<EnemyAbility>{ EnemyAbility(1235326, std::chrono::milliseconds(15900),
+                                                        std::chrono::milliseconds(32800), "Stop casting", false) },
+                {}, true) },
+        { "164562",
+          Enemy("164562",
+                std::vector<EnemyAbility>{ EnemyAbility(326450, std::chrono::milliseconds(15300),
+                                                        std::chrono::milliseconds(24200), "Loyal Beast", true) },
+                {}, true) },
+        { "165414", Enemy("165414",
+                          std::vector<EnemyAbility>{ EnemyAbility(325876, std::chrono::milliseconds(9700),
+                                                                  std::chrono::milliseconds(24200), "Dispel", false) },
+                          {}, true) },
+
+        // Floodgate---------------------------------------------------------------------------------------------------
+        { "230748",
+          Enemy("230748",
+                std::vector<EnemyAbility>{ EnemyAbility(465827, std::chrono::milliseconds(6800),
+                                                        std::chrono::milliseconds(19400), "Warp blood", false) },
+                {}, true) },
+        { "231014", Enemy("231014",
+                          std::vector<EnemyAbility>{ EnemyAbility(465120, std::chrono::milliseconds(8300),
+                                                                  std::chrono::milliseconds(17000),
+                                                                  "Loaderbots spinning", false) },
+                          {}, true) },
+
+        // Dawnbreaker-------------------------------------------------------------------------------------------------
+        { "214761", Enemy("214761",
+                          std::vector<EnemyAbility>{ EnemyAbility(432448, std::chrono::milliseconds(8300),
+                                                                  std::chrono::milliseconds(23000), "Seed", false),
+                                                     EnemyAbility(431364, std::chrono::milliseconds(3300),
+                                                                  std::chrono::milliseconds(10900), "Ray", false) },
+                          {}, true) },
+        { "210966", Enemy("210966",
+                          std::vector<EnemyAbility>{ EnemyAbility(451107, std::chrono::milliseconds(4900),
+                                                                  std::chrono::milliseconds(20600), "Cocoon", false) },
+                          {}, true) },
+        { "228540", Enemy("228540",
+                          std::vector<EnemyAbility>{ EnemyAbility(431309, std::chrono::milliseconds(12400),
+                                                                  std::chrono::milliseconds(23000), "Curse", false) },
+                          {}, true) },
+        { "213892", Enemy("213892",
+                          std::vector<EnemyAbility>{ EnemyAbility(431309, std::chrono::milliseconds(12400),
+                                                                  std::chrono::milliseconds(23000), "Curse", false) },
+                          {}, true) },
+        { "211261", Enemy("211261",
+                          std::vector<EnemyAbility>{ EnemyAbility(451102, std::chrono::milliseconds(14300),
+                                                                  std::chrono::milliseconds(27800), "Aoe", false),
+                                                     EnemyAbility(451119, std::chrono::milliseconds(8300),
+                                                                  std::chrono::milliseconds(12100), "Dot", false) },
+                          {}, true) },
+        { "211262", Enemy("211262",
+                          std::vector<EnemyAbility>{ EnemyAbility(451119, std::chrono::milliseconds(3900),
+                                                                  std::chrono::milliseconds(12100), "Dot", false) },
+                          {}, true) },
+        { "211263", Enemy("211263",
+                          std::vector<EnemyAbility>{ EnemyAbility(451119, std::chrono::milliseconds(4900),
+                                                                  std::chrono::milliseconds(12100), "Dot", false),
+                                                     EnemyAbility(450854, std::chrono::milliseconds(12100),
+                                                                  std::chrono::milliseconds(24300), "Orb", false) },
+                          {}, true) },
+
+        // Ara-kara----------------------------------------------------------------------------------------------------
+        { "216293",
+          Enemy("216293",
+                std::vector<EnemyAbility>{ EnemyAbility(434793, std::chrono::milliseconds(4000),
+                                                        std::chrono::milliseconds(16900), "AoE Barrage", true) },
+                {}, true) },
+        { "217531", Enemy("217531",
+                          std::vector<EnemyAbility>{ EnemyAbility(434802, std::chrono::milliseconds(9600),
+                                                                  std::chrono::milliseconds(20800), "Fear", true) },
+                          {}, true) },
+        { "218324", Enemy("218324",
+                          std::vector<EnemyAbility>{ EnemyAbility(438877, std::chrono::milliseconds(12100),
+                                                                  std::chrono::milliseconds(21900), "AoE", false) },
+                          {}, true) },
+        { "216338", Enemy("216338",
+                          std::vector<EnemyAbility>{ EnemyAbility(1241693, std::chrono::milliseconds(6000),
+                                                                  std::chrono::milliseconds(30300), "AoE", false) },
+                          {}, true) },
+        { "223253", Enemy("223253",
+                          std::vector<EnemyAbility>{ EnemyAbility(448248, std::chrono::milliseconds(4800),
+                                                                  std::chrono::milliseconds(20600), "Volley", true) },
+                          {}, true) },
+        { "216364", Enemy("216364",
+                          std::vector<EnemyAbility>{ EnemyAbility(433841, std::chrono::milliseconds(5800),
+                                                                  std::chrono::milliseconds(19000), "Volley", true) },
+                          {}, true) },
+        // Priory of the Sacred Flame----------------------------------------------------------------------------------
+        { "206696",
+          Enemy("206696",
+                std::vector<EnemyAbility>{ EnemyAbility(427609, std::chrono::milliseconds(20400),
+                                                        std::chrono::milliseconds(23000), "Stop casting", false),
+                                           EnemyAbility(427621, std::chrono::milliseconds(3800),
+                                                        std::chrono::milliseconds(15700), "Impale bleed", false) },
+                {}, true) },
+        { "221760", Enemy("221760",
+                          std::vector<EnemyAbility>{ EnemyAbility(444743, std::chrono::milliseconds(9500),
+                                                                  std::chrono::milliseconds(24300), "Volley", true) },
+                          {}, true) },
+        { "212826",
+          Enemy("212826",
+                std::vector<EnemyAbility>{ EnemyAbility(448485, std::chrono::milliseconds(5900),
+                                                        std::chrono::milliseconds(12100), "Tank Buster", false),
+                                           EnemyAbility(448492, std::chrono::milliseconds(14700),
+                                                        std::chrono::milliseconds(15700), "AoE", false) },
+                {}, true) },
+        { "212831", Enemy("212831",
+                          std::vector<EnemyAbility>{ EnemyAbility(427897, std::chrono::milliseconds(10800),
+                                                                  std::chrono::milliseconds(18200), "AoE", false) },
+                          {}, true) },
+        { "239833", Enemy("239833",
+                          std::vector<EnemyAbility>{ EnemyAbility(424431, std::chrono::milliseconds(26100),
+                                                                  std::chrono::milliseconds(37600), "AoE", false) },
+                          {}, true) },
+        { "206704", Enemy("206704",
+                          std::vector<EnemyAbility>{ EnemyAbility(448791, std::chrono::milliseconds(15500),
+                                                                  std::chrono::milliseconds(21700), "AoE", false) },
+                          {}, true) },
+        { "206699",
+          Enemy("206699",
+                std::vector<EnemyAbility>{ EnemyAbility(446776, std::chrono::milliseconds(7000),
+                                                        std::chrono::milliseconds(15800), "Leap bleed", false) },
+                {}, true) },
+    };
+
+    auto iter = enemy_db.find(event.name);
+    if (iter == enemy_db.end())
+        return;
+
+    auto new_enemy = iter->second;
+    new_enemy.combat_start_time = event.time_stamp;
+    enemy_roster_.emplace(event.source_id, new_enemy);
+    ShotCallEngine::generate_shotcalls(new_enemy);
+}
+
+std::string ShotCallEngine::get_player_class(int spell_id) {
     static const std::map<int, std::string> identifying_spells = {
         { 48743, "Death Knight" },   // Death's Advance
         { 198013, "Demon Hunter" },  // Eye Beam
@@ -385,21 +356,7 @@ std::string ShotCallEngine::get_player_class(int spell_id)
     }
 }
 
-bool is_battle_rez(int spell_id)
-{
-    static const std::unordered_set<int> battle_rez_ids = {
-        10609, 376999, 20707, 61999, 407133,
-    };
-
-    if (battle_rez_ids.find(spell_id) != battle_rez_ids.end()) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool is_ignorable_event(const std::string& event_type)
-{
+bool is_ignorable_event(const std::string& event_type) {
     static const std::unordered_set<std::string> ignorable_events = {
         "SWING_DAMAGE",
         "SWING_MISSED",
@@ -458,8 +415,7 @@ bool is_ignorable_event(const std::string& event_type)
     }
 }
 
-bool is_interrupt(int spell_id)
-{
+bool is_interrupt(int spell_id) {
     static const std::unordered_set<int> interrupt_ids = {
         47528,   // Death Knight (Mind Freeze)
         183752,  // Demon Hunter (Disrupt)
@@ -484,8 +440,7 @@ bool is_interrupt(int spell_id)
     }
 }
 
-int get_interrupt_id(const std::string& p_class)
-{
+int get_interrupt_id(const std::string& p_class) {
     static const std::map<std::string, int> interrupts_ids = {
         { "Death Knight", 47528 },   // Mind Freeze
         { "Demon Hunter", 183752 },  // Disrupt
@@ -510,8 +465,7 @@ int get_interrupt_id(const std::string& p_class)
     }
 }
 
-std::chrono::seconds get_interrupt_cooldown(int spell_id)
-{
+std::chrono::seconds get_interrupt_cooldown(int spell_id) {
     using namespace std::chrono_literals;
     static const std::map<int, std::chrono::seconds> interrupt_cooldown_m = {
         { 47528, 15s },   // Death Knight (Mind Freeze)
@@ -538,8 +492,7 @@ std::chrono::seconds get_interrupt_cooldown(int spell_id)
     }
 }
 
-bool is_crowd_control(int spell_id)
-{
+bool is_crowd_control(int spell_id) {
     static const std::unordered_set<int> crowd_control_ids = {
         // Death Knight
         207127,  // Blinding Sleet
@@ -592,8 +545,7 @@ bool is_crowd_control(int spell_id)
     }
 }
 
-std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class)
-{
+std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class) {
     using namespace std::chrono_literals;
     static const std::map<std::string, std::vector<AbilityState>> crowd_control_m = {
         { "Death Knight",
@@ -679,8 +631,7 @@ std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class)
     return new_map;
 }
 
-std::chrono::seconds get_crowd_control_cooldown(int spell_id)
-{
+std::chrono::seconds get_crowd_control_cooldown(int spell_id) {
     using namespace std::chrono_literals;
     static const std::map<int, std::chrono::seconds> crowd_control_cooldown_m = {
         // Death Knight

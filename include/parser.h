@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 
-struct CombatEvent
-{
+struct CombatEvent {
     std::chrono::system_clock::time_point time_stamp;
     std::string event_type;
     std::string name;

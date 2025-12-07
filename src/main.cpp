@@ -2,8 +2,7 @@
 #include "lineReader.h"
 #include "parser.h"
 
-int main()
-{
+int main() {
     ShotCallEngine engine;
     std::string write_filename = "../text_files/combat_log_write.txt";
     std::string read_filename = "../text_files/combat_log_large.txt";
