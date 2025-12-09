@@ -165,14 +165,14 @@ void ShotCallEngine::process_shotcalls() {
         auto time_now = std::chrono::system_clock::now();
         auto time_until_call = std::chrono::duration_cast<std::chrono::milliseconds>(call_time - time_now);
 
-        if (time_until_call.count() < -1000) {  // More than 1 second in the past
+        if (time_until_call.count() < -1000) {
             shot_call_queue_.pop_front();
             continue;
         }
 
         if (time_until_call.count() > 1000) {
             std::this_thread::sleep_for(std::chrono::milliseconds(time_until_call.count() - 1000));
-            continue;  // Re-check after sleeping
+            continue;
         }
 
         auto enemy_iter = enemy_roster_.find(enemy_id);
