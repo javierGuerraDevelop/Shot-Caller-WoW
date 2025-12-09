@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <functional>
 #include <iomanip>
 #include <list>
 #include <map>
@@ -37,7 +38,7 @@ struct EnemyAbility {
         : id{ id },
           first_cast{ first_cast },
           cooldown{ cooldown },
-          callout{ callout },
+          callout{ std::move(callout) },
           is_interruptable{ is_interruptable } {
     }
 };
@@ -86,9 +87,28 @@ class ShotCallEngine {
     void identify_player(const CombatEvent& event);
     void identify_enemy(const CombatEvent& event);
     void generate_shotcalls(Enemy& enemy);
+    void process_shotcalls();
+
+    // New: Set callback for sending shotcalls to external system
+    void set_shotcall_callback(std::function<void(const std::string&, const std::string&)> callback);
+
     static std::string get_player_class(int spell_id);
 
+    // Accessors for testing/debugging
+    const std::map<std::string, Player>& get_roster() const {
+        return roster_;
+    }
+    const std::map<std::string, Enemy>& get_enemy_roster() const {
+        return enemy_roster_;
+    }
+    size_t get_shotcall_queue_size() const {
+        return shot_call_queue_.size();
+    }
+
    private:
+    // Helper to find player with available interrupt
+    std::string find_available_interrupter(const std::chrono::time_point<std::chrono::system_clock>& call_time);
+
     std::map<std::string, Player> roster_{};
     std::map<std::string, AbilityState> roster_interrupts_{};
     std::map<std::string, std::map<int, AbilityState>> roster_crowd_control_{};
@@ -96,5 +116,9 @@ class ShotCallEngine {
     std::map<std::string, Enemy> enemy_roster_{};
     std::list<std::tuple<std::string, std::string, std::chrono::time_point<std::chrono::system_clock>>>
         shot_call_queue_{};
+
+    // Callback for sending shotcalls to external system (e.g., Python app)
+    std::function<void(const std::string&, const std::string&)> shotcall_callback_;
 };
+
 #endif  // SHOTCALLERCPP_ENGINE_H
