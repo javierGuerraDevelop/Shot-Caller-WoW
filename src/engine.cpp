@@ -15,15 +15,6 @@ bool is_crowd_control(int spell_id);
 std::chrono::seconds get_crowd_control_cooldown(int spell_id);
 std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class);
 
-constexpr unsigned int hash_str(const std::string_view s) {
-    unsigned int hashed = 0;
-
-    for (char c : s)
-        hashed = (hashed * 31) + c;
-
-    return hashed;
-}
-
 bool is_cast_by_party_member(const CombatEvent& event) {
     return event.source_raid_flag == "0x511" || event.source_raid_flag == "0x1511";
 }
@@ -165,7 +156,7 @@ void ShotCallEngine::process_shotcalls() {
         auto time_now = std::chrono::system_clock::now();
         auto time_until_call = std::chrono::duration_cast<std::chrono::milliseconds>(call_time - time_now);
 
-        if (time_until_call.count() < -1000) {
+        if (time_until_call.count() < 0) {
             shot_call_queue_.pop_front();
             continue;
         }

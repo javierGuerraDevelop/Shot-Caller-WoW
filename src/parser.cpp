@@ -56,7 +56,6 @@ CombatEvent parse_line(const std::string& line) {
     std::string player_name;
     std::getline(name_stream, player_name, '-');
 
-    // switch(event_type) with hash function (take that from line_reader)
     Combat_Event.name = player_name;
     Combat_Event.source_id = parts[1];
     Combat_Event.source_raid_flag = parts[3];

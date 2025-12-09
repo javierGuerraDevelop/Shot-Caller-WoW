@@ -89,12 +89,10 @@ class ShotCallEngine {
     void generate_shotcalls(Enemy& enemy);
     void process_shotcalls();
 
-    // New: Set callback for sending shotcalls to external system
     void set_shotcall_callback(std::function<void(const std::string&, const std::string&)> callback);
 
     static std::string get_player_class(int spell_id);
 
-    // Accessors for testing/debugging
     const std::map<std::string, Player>& get_roster() const {
         return roster_;
     }
@@ -106,7 +104,6 @@ class ShotCallEngine {
     }
 
    private:
-    // Helper to find player with available interrupt
     std::string find_available_interrupter(const std::chrono::time_point<std::chrono::system_clock>& call_time);
 
     std::map<std::string, Player> roster_{};
@@ -117,7 +114,6 @@ class ShotCallEngine {
     std::list<std::tuple<std::string, std::string, std::chrono::time_point<std::chrono::system_clock>>>
         shot_call_queue_{};
 
-    // Callback for sending shotcalls to external system (e.g., Python app)
     std::function<void(const std::string&, const std::string&)> shotcall_callback_;
 };
 
