@@ -1,5 +1,46 @@
 #include "lineReader.h"
 
+#include <algorithm>
+
+std::string get_latest_combat_log(const std::string& logs_directory) {
+    namespace fs = std::filesystem;
+
+    std::string latest_file;
+    std::filesystem::file_time_type latest_time;
+    bool found = false;
+
+    if (!fs::exists(logs_directory) || !fs::is_directory(logs_directory)) {
+        std::cerr << "Logs directory does not exist: " << logs_directory << std::endl;
+        return "";
+    }
+
+    for (const auto& entry : fs::directory_iterator(logs_directory)) {
+        if (!entry.is_regular_file()) {
+            continue;
+        }
+
+        std::string filename = entry.path().filename().string();
+        if (filename.find("WoWCombatLog") == std::string::npos) {
+            continue;
+        }
+
+        auto file_time = entry.last_write_time();
+        if (!found || file_time > latest_time) {
+            latest_time = file_time;
+            latest_file = entry.path().string();
+            found = true;
+        }
+    }
+
+    if (!found) {
+        std::cerr << "No combat log files found in: " << logs_directory << std::endl;
+        return "";
+    }
+
+    std::cout << "Found latest combat log: " << latest_file << std::endl;
+    return latest_file;
+}
+
 void trim_whitespace(std::string& string) {
     const std::string WHITESPACE = " \n\r\t\f\v";
 

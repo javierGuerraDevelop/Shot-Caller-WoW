@@ -4,15 +4,17 @@
 
 int main() {
     ShotCallEngine engine;
-    std::string write_filename = "../text_files/combat_log_write.txt";
-    std::string read_filename = "../text_files/combat_log_large.txt";
+
+    std::string logs_directory = "C:/Program Files (x86)/World of Warcraft/_retail_/Logs";
+    std::string combat_log_file = get_latest_combat_log(logs_directory);
+
+    if (combat_log_file.empty()) {
+        std::cerr << "Failed to find a combat log file. Exiting." << std::endl;
+        return 1;
+    }
 
     std::vector<std::string> lines;
-    monitor_file(write_filename, lines);
+    monitor_file(combat_log_file, lines);
 
-    // for (size_t i = 0; i < lines.size(); ++i)
-    // {
-    //     combat_event event = parse_line(lines[i]);
-    //     std::cout << lines[i] << std::endl;
-    // }
+    return 0;
 }
