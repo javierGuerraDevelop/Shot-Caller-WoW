@@ -3,3 +3,4 @@
 3. setup shotcalls for 2 minutes from identification
 4. i dont think that a death needs to waste compute on removing from shot call queue
     have the engine check if enemy is alive when popping from the queue
+

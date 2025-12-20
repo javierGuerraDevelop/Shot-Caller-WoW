@@ -1,14 +1,35 @@
+# my favorite clang-format
 BasedOnStyle: Google
-IndentWidth: 4
-ColumnLimit: 120
+IndentWidth: 8
+AccessModifierOffset: -3
+ColumnLimit: 100
 UseTab: Never
 Cpp11BracedListStyle: false
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: Never
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakConstructorInitializers: BeforeColon
+AllowAllConstructorInitializersOnNextLine: false
 # cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 # ln -sF build/compile_commands.json .

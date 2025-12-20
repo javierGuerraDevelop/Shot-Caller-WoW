@@ -8,17 +8,21 @@
 #include <string>
 #include <vector>
 
-struct CombatEvent {
-    std::chrono::system_clock::time_point time_stamp;
-    std::string event_type;
-    std::string name;
-    std::string source_id;
-    std::string target_id;
-    std::string source_raid_flag;
-    std::string spell_name;
-    int spell_id;
+namespace ch = std::chrono;
+using std::string;
+
+struct CombatEvent
+{
+        ch::system_clock::time_point time_stamp;
+        string event_type;
+        string name;
+        string source_id;
+        string target_id;
+        string source_raid_flag;
+        string spell_name;
+        int spell_id;
 };
 
-CombatEvent parse_line(const std::string& string);
+CombatEvent parse_line(const string& string);
 
 #endif  // SHOTCALLERCPP_PARSER_H
