@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 1. Define the executable target.
 add_executable(ShotCallerWow src/main.cpp src/parser.cpp src/line_reader.cpp
-                             src/engine.cpp src/structs.cpp)
+                             src/engine.cpp src/spell_db.cpp)
 
 # 1. Configure properties for that target.
 target_include_directories(ShotCallerWow PUBLIC include)

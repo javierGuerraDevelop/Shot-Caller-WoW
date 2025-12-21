@@ -14,21 +14,21 @@ AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterClass: true
+  AfterClass: false
   AfterControlStatement: Never
-  AfterEnum: true
+  AfterEnum: false
   AfterFunction: true
-  AfterNamespace: true
-  AfterStruct: true
-  AfterUnion: true
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
   AfterExternBlock: false
   BeforeCatch: false
   BeforeElse: false
   BeforeLambdaBody: false
   BeforeWhile: false
-  SplitEmptyFunction: true
-  SplitEmptyRecord: true
-  SplitEmptyNamespace: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 BreakConstructorInitializers: BeforeColon
 AllowAllConstructorInitializersOnNextLine: false
 # cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON

@@ -1,4 +1,4 @@
-#include "structs.h"
+#include "spell_db.h"
 
 namespace ch = std::chrono;
 using std::map;
@@ -6,12 +6,14 @@ using std::string;
 using std::unordered_set;
 using std::vector;
 
+namespace SpellDb {
+
 const unordered_set<int> battle_rez_ids = {
         10609, 376999, 20707, 61999, 407133,
 };
 
 const map<string, Enemy> enemy_db{
-        // Eco-dome--------------------------------------------------------------------------------
+        // Eco-dome----------------------------------------------------------------------------------------------
         { "245092",
           Enemy("245092",
                 vector<EnemyAbility>{ EnemyAbility(1215850, ch::milliseconds(20000),
@@ -42,7 +44,7 @@ const map<string, Enemy> enemy_db{
                 vector<EnemyAbility>{ EnemyAbility(1221679, ch::milliseconds(6000),
                                                    ch::milliseconds(13300), "Leap", false) },
                 {}, true) },
-        // Tazavesh--------------------------------------------------------------------------------
+        // Tazavesh----------------------------------------------------------------------------------------------
         { "180567",
           Enemy("180567",
                 vector<EnemyAbility>{ EnemyAbility(357827, ch::milliseconds(5000),
@@ -92,7 +94,7 @@ const map<string, Enemy> enemy_db{
                           {}, true) },
 
         // Halls of
-        // Attonement------------------------------------------------------------------------------
+        // Attonement--------------------------------------------------------------------------------------------
         { "164557",
           Enemy("164557",
                 vector<EnemyAbility>{ EnemyAbility(326409, ch::milliseconds(8900),
@@ -114,7 +116,7 @@ const map<string, Enemy> enemy_db{
                                                    ch::milliseconds(24200), "Dispel", false) },
                 {}, true) },
 
-        // Floodgate-------------------------------------------------------------------------------
+        // Floodgate---------------------------------------------------------------------------------------------
         { "230748",
           Enemy("230748",
                 vector<EnemyAbility>{ EnemyAbility(465827, ch::milliseconds(6800),
@@ -126,7 +128,7 @@ const map<string, Enemy> enemy_db{
                                                              "Loaderbots spinning", false) },
                           {}, true) },
 
-        // Dawnbreaker-----------------------------------------------------------------------------
+        // Dawnbreaker-------------------------------------------------------------------------------------------
         { "214761",
           Enemy("214761",
                 vector<EnemyAbility>{ EnemyAbility(432448, ch::milliseconds(8300),
@@ -169,7 +171,7 @@ const map<string, Enemy> enemy_db{
                                                    ch::milliseconds(24300), "Orb", false) },
                 {}, true) },
 
-        // Ara-kara--------------------------------------------------------------------------------
+        // Ara-kara----------------------------------------------------------------------------------------------
         { "216293",
           Enemy("216293",
                 vector<EnemyAbility>{ EnemyAbility(434793, ch::milliseconds(4000),
@@ -201,7 +203,7 @@ const map<string, Enemy> enemy_db{
                                                    ch::milliseconds(19000), "Volley", true) },
                 {}, true) },
         // Priory of the Sacred
-        // Flame-----------------------------------------------------------------------------------
+        // Flame-------------------------------------------------------------------------------------------------
         { "206696", Enemy("206696",
                           vector<EnemyAbility>{
                               EnemyAbility(427609, ch::milliseconds(20400), ch::milliseconds(23000),
@@ -326,7 +328,7 @@ const unordered_set<int> interrupt_ids = {
         6552     // Warrior (Pummel)
 };
 
-const map<string, int> interrupts_ids = {
+const map<string, int> interrupt_map = {
         { "Death Knight", 47528 },   // Mind Freeze
         { "Demon Hunter", 183752 },  // Disrupt
         { "Druid", 106839 },         // Skull Bash (Main kick)
@@ -342,7 +344,7 @@ const map<string, int> interrupts_ids = {
         { "Warrior", 6552 }          // Pummel
 };
 
-const map<int, ch::seconds> interrupt_cooldown_m = {
+const map<int, ch::seconds> interrupt_cooldown_map = {
         { 47528, ch::seconds(15) },   // Death Knight (Mind Freeze)
         { 183752, ch::seconds(15) },  // Demon Hunter (Disrupt)
         { 78675, ch::seconds(60) },   // Druid (Moonkin)
@@ -403,7 +405,7 @@ const unordered_set<int> crowd_control_ids = {
         46968  // Shockwave
 };
 
-const map<string, vector<AbilityState>> crowd_control_m = {
+const map<string, vector<AbilityState>> crowd_control_map = {
         { "Death Knight",
           {
               AbilityState(207127, ch::seconds(60)),  // Blinding Sleet
@@ -473,7 +475,7 @@ const map<string, vector<AbilityState>> crowd_control_m = {
           } }
 };
 
-const map<int, ch::seconds> crowd_control_cooldown_m = {
+const map<int, ch::seconds> crowd_control_cooldown_map = {
         // Death Knight
         { 207127, ch::seconds(60) },  // Blinding Sleet
         { 207167, ch::seconds(90) },  // Gorefiend's Grasp
@@ -516,3 +518,4 @@ const map<int, ch::seconds> crowd_control_cooldown_m = {
         { 5246, ch::seconds(90) },  // Intimidating Shout
         { 46968, ch::seconds(40) }  // Shockwave
 };
+}  // namespace SpellDb

@@ -15,15 +15,17 @@ using std::string;
 using std::unordered_set;
 using std::vector;
 
+namespace SpellDb {
 extern const unordered_set<int> battle_rez_ids;
 extern const map<string, Enemy> enemy_db;
 extern const map<int, string> identifying_spells;
 extern const unordered_set<string> ignorable_events;
 extern const unordered_set<int> interrupt_ids;
-extern const map<string, int> interrupts_ids;
-extern const map<int, ch::seconds> interrupt_cooldown_m;
+extern const map<string, int> interrupt_map;
+extern const map<int, ch::seconds> interrupt_cooldown_map;
 extern const unordered_set<int> crowd_control_ids;
-extern const map<string, vector<AbilityState>> crowd_control_m;
-extern const map<int, ch::seconds> crowd_control_cooldown_m;
+extern const map<string, vector<AbilityState>> crowd_control_map;
+extern const map<int, ch::seconds> crowd_control_cooldown_map;
+}  // namespace SpellDb
 
 #endif  // SHOTCALLERCPP_STRUCTS_H

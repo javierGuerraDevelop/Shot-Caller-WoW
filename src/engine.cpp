@@ -1,6 +1,6 @@
 #include "engine.h"
 
-#include "structs.h"
+#include "spell_db.h"
 
 namespace ch = std::chrono;
 using std::function;
@@ -79,9 +79,9 @@ void ShotCallEngine::handle_player_event(const CombatEvent& event)
                 auto player_interrupt_cd = player_interrupt.cooldown;
                 player_interrupt.on_cooldown_until = time_now + player_interrupt_cd;
         } else if (is_crowd_control(event.spell_id)) {
-                auto& player_crowd_control_m = roster_crowd_control_[player_iter->first];
-                auto cc_iter = player_crowd_control_m.find(event.spell_id);
-                if (cc_iter != player_crowd_control_m.end()) {
+                auto& player_crowd_control_map = roster_crowd_control_[player_iter->first];
+                auto cc_iter = player_crowd_control_map.find(event.spell_id);
+                if (cc_iter != player_crowd_control_map.end()) {
                         auto crowd_control_cd = cc_iter->second.cooldown;
                         cc_iter->second.on_cooldown_until = time_now + crowd_control_cd;
                 }
@@ -107,11 +107,10 @@ void ShotCallEngine::generate_shotcalls(Enemy& enemy)
                 auto iterations = (five_minutes_ms / cd_ms) + 1;
                 for (size_t i = 0; i < iterations; ++i) {
                         ch::milliseconds duration;
-                        if (i == 0) {
+                        if (i == 0)
                                 duration = spell.first_cast;
-                        } else {
+                        else
                                 duration = spell.first_cast + ch::milliseconds(i * cd_ms);
-                        }
 
                         tuple<string, string, ch::time_point<ch::system_clock>> shotcall{
                                 make_tuple(enemy.id, spell.callout,
@@ -201,13 +200,13 @@ void ShotCallEngine::identify_player(const CombatEvent& event)
 
 bool is_battle_rez(int spell_id)
 {
-        return battle_rez_ids.find(spell_id) != battle_rez_ids.end();
+        return SpellDb::battle_rez_ids.find(spell_id) != SpellDb::battle_rez_ids.end();
 }
 
 void ShotCallEngine::identify_enemy(const CombatEvent& event)
 {
-        auto iter = enemy_db.find(event.name);
-        if (iter == enemy_db.end())
+        auto iter = SpellDb::enemy_db.find(event.name);
+        if (iter == SpellDb::enemy_db.end())
                 return;
 
         auto new_enemy = iter->second;
@@ -218,8 +217,8 @@ void ShotCallEngine::identify_enemy(const CombatEvent& event)
 
 string ShotCallEngine::get_player_class(int spell_id)
 {
-        auto iter = identifying_spells.find(spell_id);
-        if (iter != identifying_spells.end())
+        auto iter = SpellDb::identifying_spells.find(spell_id);
+        if (iter != SpellDb::identifying_spells.end())
                 return iter->second;
         else
                 return "";
@@ -227,18 +226,18 @@ string ShotCallEngine::get_player_class(int spell_id)
 
 bool is_ignorable_event(const string& event_type)
 {
-        return ignorable_events.find(event_type) != ignorable_events.end();
+        return SpellDb::ignorable_events.find(event_type) != SpellDb::ignorable_events.end();
 }
 
 bool is_interrupt(int spell_id)
 {
-        return interrupt_ids.find(spell_id) != interrupt_ids.end();
+        return SpellDb::interrupt_ids.find(spell_id) != SpellDb::interrupt_ids.end();
 }
 
 int get_interrupt_id(const string& p_class)
 {
-        auto iter = interrupts_ids.find(p_class);
-        if (iter != interrupts_ids.end())
+        auto iter = SpellDb::interrupt_map.find(p_class);
+        if (iter != SpellDb::interrupt_map.end())
                 return iter->second;
         else
                 return 0;
@@ -247,8 +246,8 @@ int get_interrupt_id(const string& p_class)
 ch::seconds get_interrupt_cooldown(int spell_id)
 {
         using namespace std::chrono_literals;
-        auto iter = interrupt_cooldown_m.find(spell_id);
-        if (iter != interrupt_cooldown_m.end())
+        auto iter = SpellDb::interrupt_cooldown_map.find(spell_id);
+        if (iter != SpellDb::interrupt_cooldown_map.end())
                 return iter->second;
         else
                 return 0s;
@@ -256,13 +255,13 @@ ch::seconds get_interrupt_cooldown(int spell_id)
 
 bool is_crowd_control(int spell_id)
 {
-        return crowd_control_ids.find(spell_id) != crowd_control_ids.end();
+        return SpellDb::crowd_control_ids.find(spell_id) != SpellDb::crowd_control_ids.end();
 }
 
 map<int, AbilityState> get_crowd_control_m(const string& p_class)
 {
-        auto iter = crowd_control_m.find(p_class);
-        if (iter == crowd_control_m.end())
+        auto iter = SpellDb::crowd_control_map.find(p_class);
+        if (iter == SpellDb::crowd_control_map.end())
                 return {};
 
         map<int, AbilityState> new_map;
@@ -276,8 +275,8 @@ map<int, AbilityState> get_crowd_control_m(const string& p_class)
 ch::seconds get_crowd_control_cooldown(int spell_id)
 {
         using namespace std::chrono_literals;
-        auto iter = crowd_control_cooldown_m.find(spell_id);
-        if (iter != crowd_control_cooldown_m.end())
+        auto iter = SpellDb::crowd_control_cooldown_map.find(spell_id);
+        if (iter != SpellDb::crowd_control_cooldown_map.end())
                 return iter->second;
         else
                 return 0s;
