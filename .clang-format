@@ -1,8 +1,8 @@
 # my favorite clang-format
 BasedOnStyle: Google
-IndentWidth: 8
+IndentWidth: 4
 AccessModifierOffset: -3
-ColumnLimit: 100
+ColumnLimit: 80
 UseTab: Never
 Cpp11BracedListStyle: false
 AllowShortIfStatementsOnASingleLine: Never
@@ -14,10 +14,10 @@ AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
 BreakBeforeBraces: Custom
 BraceWrapping:
+  AfterFunction: true
   AfterClass: false
   AfterControlStatement: Never
   AfterEnum: false
-  AfterFunction: true
   AfterNamespace: false
   AfterStruct: false
   AfterUnion: false

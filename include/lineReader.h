@@ -9,11 +9,8 @@
 #include <thread>
 #include <vector>
 
-using std::string;
-using std::vector;
-
-void monitor_file(const string& filename, vector<string> lines);
-vector<string> read_file(const string& filename);
-string get_latest_combat_log(const string& logs_directory);
+void monitor_file(const std::string& filename, std::vector<std::string> lines);
+std::vector<std::string> read_file(const std::string& filename);
+std::string get_latest_combat_log(const std::string& logs_directory);
 
 #endif  // SHOTCALLERCPP_LINEREADER_H
