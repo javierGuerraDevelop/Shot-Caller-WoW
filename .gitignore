@@ -2,7 +2,7 @@ build/
 Build/
 cmake-build-*/
 out/
-.cache/clangd/index/
+.cache/
 
 CMakeCache.txt
 CMakeFiles/
