@@ -21,8 +21,7 @@ struct AbilityState {
     ch::seconds cooldown;
     ch::time_point<ch::system_clock> on_cooldown_until{};
 
-    AbilityState(int id, ch::seconds cooldown) : id{ id }, cooldown{ cooldown }
-    {}
+    AbilityState(int id, ch::seconds cooldown) : id{id}, cooldown{cooldown} {}
     AbilityState() : id(0), cooldown(ch::seconds(0)) {}
 };
 
@@ -35,12 +34,11 @@ struct EnemyAbility {
 
     EnemyAbility(int id, ch::milliseconds first_cast, ch::milliseconds cooldown,
                  std::string callout, bool is_interruptable)
-        : id{ id },
-          first_cast{ first_cast },
-          cooldown{ cooldown },
-          callout{ std::move(callout) },
-          is_interruptable{ is_interruptable }
-    {}
+        : id{id},
+          first_cast{first_cast},
+          cooldown{cooldown},
+          callout{std::move(callout)},
+          is_interruptable{is_interruptable} {}
 };
 
 struct Player {
@@ -49,16 +47,15 @@ struct Player {
     std::string p_class;
     AbilityState interrupt;
     std::map<int, AbilityState> crowd_control;
-    bool is_alive{ true };
+    bool is_alive{true};
 
     Player(std::string id, std::string name, std::string p_class, AbilityState interrupt,
            std::map<int, AbilityState> crowd_control)
-        : id{ std::move(id) },
-          name{ std::move(name) },
-          p_class{ std::move(p_class) },
-          interrupt{ interrupt },
-          crowd_control{ std::move(crowd_control) }
-    {}
+        : id{std::move(id)},
+          name{std::move(name)},
+          p_class{std::move(p_class)},
+          interrupt{interrupt},
+          crowd_control{std::move(crowd_control)} {}
 
     Player() = default;
 };
@@ -71,15 +68,14 @@ struct Enemy {
 
     Enemy(std::string id, std::vector<EnemyAbility> spells,
           ch::time_point<ch::system_clock> combat_start_time, bool is_ccable)
-        : id{ std::move(id) },
-          spells{ std::move(spells) },
-          combat_start_time{ combat_start_time },
-          is_ccable{ is_ccable }
-    {}
+        : id{std::move(id)},
+          spells{std::move(spells)},
+          combat_start_time{combat_start_time},
+          is_ccable{is_ccable} {}
 };
 
 class ShotCallEngine {
- public:
+   public:
     void handle_event(const CombatEvent& event);
     void handle_player_event(const CombatEvent& event);
     void handle_enemy_event(const CombatEvent& event);
@@ -94,22 +90,18 @@ class ShotCallEngine {
 
     static std::string get_player_class(int spell_id);
 
-    const std::map<std::string, Player>& get_roster() const
-    {
+    const std::map<std::string, Player>& get_roster() const {
         return roster_;
     }
-    const std::map<std::string, Enemy>& get_enemy_roster() const
-    {
+    const std::map<std::string, Enemy>& get_enemy_roster() const {
         return enemy_roster_;
     }
-    size_t get_shotcall_queue_size() const
-    {
+    size_t get_shotcall_queue_size() const {
         return shot_call_queue_.size();
     }
 
- private:
-    std::string find_available_interrupter(
-        const ch::time_point<ch::system_clock>& call_time);
+   private:
+    std::string find_available_interrupter(const ch::time_point<ch::system_clock>& call_time);
 
     std::map<std::string, Player> roster_{};
     std::map<std::string, AbilityState> roster_interrupts_{};

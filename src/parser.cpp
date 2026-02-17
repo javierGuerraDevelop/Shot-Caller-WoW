@@ -2,8 +2,7 @@
 
 namespace ch = std::chrono;
 
-ch::time_point<ch::system_clock> parse_timestamp(const std::string& timestamp)
-{
+ch::time_point<ch::system_clock> parse_timestamp(const std::string& timestamp) {
     size_t time_zone_pos = timestamp.find_last_of("+-");
     if (time_zone_pos == std::string::npos)
         return {};
@@ -30,8 +29,7 @@ ch::time_point<ch::system_clock> parse_timestamp(const std::string& timestamp)
     return time_point;
 }
 
-CombatEvent parse_line(const std::string& line)
-{
+CombatEvent parse_line(const std::string& line) {
     if (line.empty())
         return CombatEvent{};
 
