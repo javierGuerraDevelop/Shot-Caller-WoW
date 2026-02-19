@@ -18,7 +18,8 @@ struct CombatEvent {
     std::string target_id;
     std::string source_raid_flag;
     std::string spell_name;
-    int spell_id;
+    std::string npc_id;
+    int spell_id{};
 };
 
 CombatEvent parse_line(const std::string& string);

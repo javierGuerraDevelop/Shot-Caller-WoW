@@ -7,19 +7,57 @@
 
 namespace Constants {
 
-inline constexpr std::array<std::pair<int, std::string_view>, 12> kIdentifyingSpells{{
-    {48743, "Death Knight"},   // Death's Advance
-    {198013, "Demon Hunter"},  // Eye Beam
-    {1126, "Druid"},           // Mark of the Wild
-    {364342, "Evoker"},        // Blessing of the Bronze (Evoker buff)
-    {5384, "Hunter"},          // Feign Death
-    {1459, "Mage"},            // Arcane Intellect
-    {116670, "Monk"},          // Vivify
-    {19750, "Paladin"},        // Flash of Light
-    {21562, "Priest"},         // Power Word: Fortitude
-    {1784, "Rogue"},           // Stealth
-    {10613, "Shaman"},         // Windfury Totem
-    {6673, "Warrior"}          // Battle Shout
+inline constexpr std::array<std::pair<int, std::string_view>, 37> kIdentifyingSpells{{
+    // Death Knight
+    {48743, "Death Knight"},   // Death's Advance (all specs)
+    {49998, "Death Knight"},   // Death Strike (all specs)
+    {47541, "Death Knight"},   // Death Coil (Unholy)
+    // Demon Hunter
+    {198013, "Demon Hunter"},  // Eye Beam (Havoc)
+    {185123, "Demon Hunter"},  // Throw Glaive (all specs)
+    {162794, "Demon Hunter"},  // Chaos Strike (Havoc)
+    // Druid
+    {1126, "Druid"},           // Mark of the Wild (all specs)
+    {8921, "Druid"},           // Moonfire (all specs)
+    {8936, "Druid"},           // Regrowth (all specs)
+    // Evoker
+    {364342, "Evoker"},        // Blessing of the Bronze (all specs)
+    {361469, "Evoker"},        // Living Flame (all specs)
+    // Hunter
+    {5384, "Hunter"},          // Feign Death (all specs)
+    {34026, "Hunter"},         // Kill Command (BM/Survival)
+    {185358, "Hunter"},        // Arcane Shot (BM/MM)
+    // Mage
+    {1459, "Mage"},            // Arcane Intellect (all specs)
+    {108853, "Mage"},          // Fire Blast (Fire/Frost)
+    {116, "Mage"},             // Frostbolt (Frost)
+    {133, "Mage"},             // Fireball (Fire)
+    // Monk
+    {116670, "Monk"},          // Vivify (all specs)
+    {100780, "Monk"},          // Tiger Palm (all specs)
+    {107428, "Monk"},          // Rising Sun Kick (WW/MW)
+    // Paladin
+    {19750, "Paladin"},        // Flash of Light (Holy)
+    {275773, "Paladin"},       // Judgment (all specs)
+    {35395, "Paladin"},        // Crusader Strike (Ret/Prot)
+    // Priest
+    {21562, "Priest"},         // Power Word: Fortitude (all specs)
+    {585, "Priest"},           // Smite (all specs)
+    {8092, "Priest"},          // Mind Blast (all specs)
+    // Rogue
+    {1784, "Rogue"},           // Stealth (all specs)
+    {196819, "Rogue"},         // Eviscerate (all specs)
+    // Shaman
+    {10613, "Shaman"},         // Windfury Totem (Enhancement)
+    {188196, "Shaman"},        // Lightning Bolt (all specs)
+    {51505, "Shaman"},         // Lava Burst (Ele/Resto)
+    // Warlock
+    {686, "Warlock"},          // Shadow Bolt (Affliction/Demo)
+    {29722, "Warlock"},        // Incinerate (Destruction)
+    // Warrior
+    {6673, "Warrior"},         // Battle Shout (all specs)
+    {12294, "Warrior"},        // Mortal Strike (Arms)
+    {23922, "Warrior"},        // Shield Slam (Protection)
 }};
 
 constexpr std::string_view GetClassFromIdentifyingSpells(int spell_id) {
@@ -31,7 +69,7 @@ constexpr std::string_view GetClassFromIdentifyingSpells(int spell_id) {
     return "";
 }
 
-inline constexpr std::array<std::string_view, 38> kValidEvents{
+inline constexpr std::array<std::string_view, 38> kIgnorableEvents{
     "RANGE_DAMAGE",
     "RANGE_MISSED",
     "SPELL_AURA_APPLIED",
@@ -72,8 +110,8 @@ inline constexpr std::array<std::string_view, 38> kValidEvents{
     "UNIT_DISSIPATES",
 };
 
-constexpr bool IsValidEvent(std::string_view event) {
-    for (const auto& item : kValidEvents) {
+constexpr bool IsIgnorableEvent(std::string_view event) {
+    for (const auto& item : kIgnorableEvents) {
         if (event == item) {
             return true;
         }
@@ -199,7 +237,7 @@ struct EnemySpellEntry {
     bool is_ccable;
 };
 
-inline constexpr std::array<EnemySpellEntry, 47> kEnemyData{{
+inline constexpr std::array<EnemySpellEntry, 54> kEnemyData{{
     // Eco-dome
     {"245092", 1215850, 20000, 37000, "AoE", false, true},
     {"234883", 1221152, 6500, 18200, "AoE", false, true},
@@ -254,6 +292,14 @@ inline constexpr std::array<EnemySpellEntry, 47> kEnemyData{{
     {"239833", 424431, 26100, 37600, "AoE", false, true},
     {"206704", 448791, 15500, 21700, "AoE", false, true},
     {"206699", 446776, 7000, 15800, "Leap bleed", false, true},
+    // Cinderbrew Meadery
+    {"214697", 463206, 8100, 18100, "Knock", true, true},    // Tenderize
+    {"210269", 463218, 8500, 24200, "DoT", true, true},      // Volatile Keg
+    {"223423", 448619, 9100, 30300, "Charge", true, true},   // Reckless Delivery
+    {"220946", 442995, 10300, 23000, "AoE", true, true},     // Swarming Surprise
+    {"222964", 441434, 8700, 23000, "Batch", false, true},   // Failed Batch
+    {"220141", 440687, 5900, 25400, "Volley", true, true},   // Honey Volley
+    {"218671", 437956, 10500, 18200, "Dispel", true, true},  // Erupting Inferno
 }};
 
 constexpr bool IsTrackedEnemy(std::string_view enemy_id) {

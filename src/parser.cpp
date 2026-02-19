@@ -29,6 +29,29 @@ ch::time_point<ch::system_clock> parse_timestamp(const std::string& timestamp) {
     return time_point;
 }
 
+void strip_quotes(std::string& str) {
+    str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
+}
+
+std::string extract_npc_id(const std::string& guid) {
+    if (guid.rfind("Creature", 0) != 0)
+        return {};
+
+    size_t pos = 0;
+    for (int i = 0; i < 5; ++i) {
+        pos = guid.find('-', pos);
+        if (pos == std::string::npos)
+            return {};
+        ++pos;
+    }
+
+    size_t end = guid.find('-', pos);
+    if (end == std::string::npos)
+        return {};
+
+    return guid.substr(pos, end - pos);
+}
+
 CombatEvent parse_line(const std::string& line) {
     if (line.empty())
         return CombatEvent{};
@@ -41,7 +64,7 @@ CombatEvent parse_line(const std::string& line) {
     while (std::getline(stream, part, ','))
         parts.push_back(part);
 
-    if (parts.size() < 10)
+    if (parts.size() < 11)
         return {};
 
     size_t space_pos = parts[0].find("  ");
@@ -54,12 +77,20 @@ CombatEvent parse_line(const std::string& line) {
     std::stringstream name_stream(parts[2]);
     std::string player_name;
     std::getline(name_stream, player_name, '-');
+    strip_quotes(player_name);
 
     Combat_Event.name = player_name;
     Combat_Event.source_id = parts[1];
     Combat_Event.source_raid_flag = parts[3];
     Combat_Event.target_id = parts[5];
     Combat_Event.spell_name = parts[10];
+    Combat_Event.npc_id = extract_npc_id(parts[1]);
+
+    try {
+        Combat_Event.spell_id = std::stoi(parts[9]);
+    } catch (...) {
+        Combat_Event.spell_id = 0;
+    }
 
     return Combat_Event;
 }

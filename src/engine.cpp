@@ -12,8 +12,17 @@ bool is_crowd_control(int spell_id);
 std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class);
 
 bool is_cast_by_party_member(const CombatEvent& event) {
-    // This uses a bitmask from the log, 0x511 and 0x1511 are the bits for enemies
-    return event.source_raid_flag == "0x511" || event.source_raid_flag == "0x1511";
+    // WoW unit flags: 0x1 = MINE, 0x2 = PARTY, 0x400 = TYPE_PLAYER
+    // A party member player has TYPE_PLAYER set and either MINE or PARTY affiliation
+    unsigned long flag = 0;
+    try {
+        flag = std::stoul(event.source_raid_flag, nullptr, 16);
+    } catch (...) {
+        return false;
+    }
+    bool is_player = (flag & 0x400) != 0;
+    bool is_party_or_mine = (flag & 0x3) != 0;
+    return is_player && is_party_or_mine;
 }
 
 void ShotCallEngine::handle_event(const CombatEvent& event) {
@@ -41,16 +50,17 @@ void ShotCallEngine::handle_death(const CombatEvent& event) {
 }
 
 void ShotCallEngine::handle_player_event(const CombatEvent& event) {
-    if (is_ignorable_event(event.event_type))
-        return;
-
     auto player_iter = roster_.find(event.source_id);
     if (player_iter == roster_.end()) {
         identify_player(event);
         player_iter = roster_.find(event.source_id);
-        if (player_iter == roster_.end())
-            return;
     }
+
+    if (is_ignorable_event(event.event_type))
+        return;
+
+    if (player_iter == roster_.end())
+        return;
 
     auto& player = player_iter->second;
     if (!player.is_alive)
@@ -130,7 +140,11 @@ void ShotCallEngine::set_shotcall_callback(
 }
 
 void ShotCallEngine::process_shotcalls() {
-    while (!shot_call_queue_.empty()) {
+    while (true) {
+        if (shot_call_queue_.empty()) {
+            std::this_thread::sleep_for(ch::milliseconds(250));
+            continue;
+        }
         auto& front_call = shot_call_queue_.front();
         const std::string& enemy_id = std::get<0>(front_call);
         const std::string& callout = std::get<1>(front_call);
@@ -184,19 +198,19 @@ bool is_battle_rez(int spell_id) {
 }
 
 void ShotCallEngine::identify_enemy(const CombatEvent& event) {
-    if (!Constants::IsTrackedEnemy(event.name))
+    if (event.npc_id.empty() || !Constants::IsTrackedEnemy(event.npc_id))
         return;
 
     std::vector<EnemyAbility> spells;
     for (const auto& entry : Constants::kEnemyData) {
-        if (entry.enemy_id == event.name) {
+        if (entry.enemy_id == event.npc_id) {
             spells.emplace_back(entry.spell_id, ch::milliseconds(entry.first_cast_ms),
                                 ch::milliseconds(entry.cooldown_ms), std::string(entry.callout),
                                 entry.is_interruptable);
         }
     }
-    bool is_ccable = Constants::IsEnemyCcable(event.name);
-    Enemy new_enemy(std::string(event.name), spells, event.time_stamp, is_ccable);
+    bool is_ccable = Constants::IsEnemyCcable(event.npc_id);
+    Enemy new_enemy(event.source_id, spells, event.time_stamp, is_ccable);
     enemy_roster_.emplace(event.source_id, new_enemy);
     ShotCallEngine::generate_shotcalls(new_enemy);
 }
@@ -206,7 +220,7 @@ std::string ShotCallEngine::get_player_class(int spell_id) {
 }
 
 bool is_ignorable_event(const std::string& event_type) {
-    return !Constants::IsValidEvent(event_type);
+    return Constants::IsIgnorableEvent(event_type);
 }
 
 bool is_interrupt(int spell_id) {
