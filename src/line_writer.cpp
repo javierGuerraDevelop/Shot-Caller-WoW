@@ -1,4 +1,4 @@
-#include "lineWriter.h"
+#include "line_writer.h"
 
 #include <ctime>
 #include <filesystem>
@@ -17,8 +17,9 @@ std::string open_output_file(std::ofstream& file) {
     std::string path = oss.str();
 
     file.open(path);
-    if (!file.is_open())
+    if (!file.is_open()) {
         std::cerr << "Failed to open output file: " << path << std::endl;
+    }
 
     return path;
 }

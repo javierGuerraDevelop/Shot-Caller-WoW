@@ -1,5 +1,5 @@
-#ifndef SHOTCALLERCPP_LINEWRITER_H
-#define SHOTCALLERCPP_LINEWRITER_H
+#ifndef SHOTCALLERCPP_LINE_WRITER_H
+#define SHOTCALLERCPP_LINE_WRITER_H
 
 #include <fstream>
 #include <functional>
@@ -12,4 +12,4 @@ std::string open_output_file(std::ofstream& file);
 std::function<void(const std::string&, const std::string&)> make_shotcall_writer(
     std::ofstream& file);
 
-#endif  // SHOTCALLERCPP_LINEWRITER_H
+#endif  // SHOTCALLERCPP_LINE_WRITER_H

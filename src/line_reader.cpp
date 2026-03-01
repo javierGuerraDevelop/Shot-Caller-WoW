@@ -1,4 +1,4 @@
-#include "lineReader.h"
+#include "line_reader.h"
 
 namespace ch = std::chrono;
 
@@ -15,12 +15,14 @@ std::string get_latest_combat_log(const std::string& logs_directory) {
     }
 
     for (const auto& entry : fs::directory_iterator(logs_directory)) {
-        if (!entry.is_regular_file())
+        if (!entry.is_regular_file()) {
             continue;
+        }
 
         std::string filename = entry.path().filename().string();
-        if (filename.find("WoWCombatLog") == std::string::npos)
+        if (filename.find("WoWCombatLog") == std::string::npos) {
             continue;
+        }
 
         auto file_time = entry.last_write_time();
         if (!found || file_time > latest_time) {
@@ -54,7 +56,7 @@ void trim_whitespace(std::string& str) {
 
 std::vector<std::string> read_file(const std::string& filename) {
     std::vector<std::string> lines;
-    std::ifstream input_file(filename);
+    std::ifstream input_file{ filename };
     if (!input_file.is_open()) {
         std::cerr << "Error opening file" << filename << std::endl;
         return std::vector<std::string>{};
@@ -69,7 +71,7 @@ std::vector<std::string> read_file(const std::string& filename) {
 }
 
 void monitor_file(const std::string& filename, std::vector<std::string> lines) {
-    std::ifstream input_file(filename);
+    std::ifstream input_file{ filename };
     if (!input_file.is_open()) {
         std::cerr << "Error opening file: " << filename << "\n";
         return;
@@ -77,7 +79,7 @@ void monitor_file(const std::string& filename, std::vector<std::string> lines) {
 
     input_file.seekg(0, std::ios::end);
     std::cout << "Monitoring for new lines in: " << filename << "...\n";
-    std::string line{};
+    std::string line;
     while (true) {
         if (std::getline(input_file, line)) {
             trim_whitespace(line);

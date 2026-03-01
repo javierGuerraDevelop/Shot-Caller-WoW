@@ -4,11 +4,6 @@
 
 namespace ch = std::chrono;
 
-bool is_battle_rez(int spell_id);
-bool is_ignorable_event(const std::string& event_type);
-bool is_interrupt(int spell_id);
-int get_interrupt_id(const std::string& p_class);
-bool is_crowd_control(int spell_id);
 std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class);
 
 bool is_cast_by_party_member(const CombatEvent& event) {
@@ -26,10 +21,11 @@ bool is_cast_by_party_member(const CombatEvent& event) {
 }
 
 void ShotCallEngine::handle_event(const CombatEvent& event) {
-    if (is_cast_by_party_member(event))
+    if (is_cast_by_party_member(event)) {
         handle_player_event(event);
-    else
+    } else {
         handle_enemy_event(event);
+    }
 }
 
 void ShotCallEngine::handle_death(const CombatEvent& event) {
@@ -56,60 +52,55 @@ void ShotCallEngine::handle_player_event(const CombatEvent& event) {
         player_iter = roster_.find(event.source_id);
     }
 
-    if (is_ignorable_event(event.event_type))
+    if (Constants::is_ignorable_event(event.event_type)) {
         return;
+    }
 
-    if (player_iter == roster_.end())
-        return;
-
-    auto& player = player_iter->second;
-    if (!player.is_alive)
-        return;
-
-    auto time_now = event.time_stamp;
-    if (is_battle_rez(event.spell_id) && event.event_type == "SPELL_CAST_SUCCESS") {
-        auto target_iter = roster_.find(event.target_id);
-        if (target_iter != roster_.end())
-            target_iter->second.is_alive = true;
-        return;
-    } else if (is_interrupt(event.spell_id)) {
+    if (Constants::is_battle_rez(event.spell_id) && event.event_type == "SPELL_CAST_SUCCESS") {
+        if (auto it = roster_.find(event.target_id); it != roster_.end()) {
+            it->second.is_alive = true;
+        }
+    } else if (Constants::is_interrupt(event.spell_id)) {
         auto& player_interrupt = roster_interrupts_[player_iter->first];
         auto player_interrupt_cd = player_interrupt.cooldown;
-        player_interrupt.on_cooldown_until = time_now + player_interrupt_cd;
-    } else if (is_crowd_control(event.spell_id)) {
+        player_interrupt.on_cooldown_until = event.time_stamp + player_interrupt_cd;
+    } else if (Constants::is_crowd_control(event.spell_id)) {
         auto& player_crowd_control_map = roster_crowd_control_[player_iter->first];
-        auto cc_iter = player_crowd_control_map.find(event.spell_id);
-        if (cc_iter != player_crowd_control_map.end()) {
-            auto crowd_control_cd = cc_iter->second.cooldown;
-            cc_iter->second.on_cooldown_until = time_now + crowd_control_cd;
+        if (auto it = player_crowd_control_map.find(event.spell_id);
+            it != player_crowd_control_map.end()) {
+            auto crowd_control_cd = it->second.cooldown;
+            it->second.on_cooldown_until = event.time_stamp + crowd_control_cd;
         }
     }
 }
 
 void ShotCallEngine::handle_enemy_event(const CombatEvent& event) {
-    auto iter = enemy_roster_.find(event.source_id);
-    if (iter == enemy_roster_.end())
+    if (auto it = enemy_roster_.find(event.source_id); it != enemy_roster_.end()) {
         identify_enemy(event);
+    }
 }
 
 void ShotCallEngine::generate_shotcalls(Enemy& enemy) {
-    for (size_t spell_idx = 0; spell_idx < enemy.spells.size(); ++spell_idx) {
-        const auto& spell = enemy.spells[spell_idx];
+    for (size_t i = 0; i < enemy.spells.size(); ++i) {
+        const auto& spell = enemy.spells[i];
         long long cd_ms = spell.cooldown.count();
-        if (cd_ms <= 0)
+        if (cd_ms <= 0) {
             continue;
+        }
 
         long long five_minutes_ms = 300000;
         auto iterations = (five_minutes_ms / cd_ms) + 1;
         for (size_t i = 0; i < iterations; ++i) {
-            ch::milliseconds duration;
-            if (i == 0)
+            ch::milliseconds duration{};
+            if (i == 0) {
                 duration = spell.first_cast;
-            else
+            } else {
                 duration = spell.first_cast + ch::milliseconds(i * cd_ms);
+            }
 
             std::tuple<std::string, std::string, ch::time_point<ch::system_clock>> shotcall{
-                std::make_tuple(enemy.id, spell.callout, (enemy.combat_start_time + duration))};
+                std::make_tuple(enemy.id, spell.callout, (enemy.combat_start_time + duration))
+            };
             shot_call_queue_.push_back(shotcall);
         }
     }
@@ -121,15 +112,18 @@ void ShotCallEngine::generate_shotcalls(Enemy& enemy) {
 std::string ShotCallEngine::find_available_interrupter(
     const ch::time_point<ch::system_clock>& call_time) {
     for (const auto& [player_id, player] : roster_) {
-        if (!player.is_alive)
+        if (!player.is_alive) {
             continue;
+        }
 
         auto interrupt_iter = roster_interrupts_.find(player_id);
-        if (interrupt_iter == roster_interrupts_.end())
+        if (interrupt_iter == roster_interrupts_.end()) {
             continue;
+        }
 
-        if (interrupt_iter->second.on_cooldown_until <= call_time)
+        if (interrupt_iter->second.on_cooldown_until <= call_time) {
             return player.name;
+        }
     }
     return "this one is going off";
 }
@@ -160,8 +154,7 @@ void ShotCallEngine::process_shotcalls() {
             continue;
         }
 
-        auto enemy_iter = enemy_roster_.find(enemy_id);
-        if (enemy_iter == enemy_roster_.end()) {
+        if (auto it = enemy_roster_.find(enemy_id); it != enemy_roster_.end()) {
             shot_call_queue_.pop_front();
             continue;
         }
@@ -169,8 +162,9 @@ void ShotCallEngine::process_shotcalls() {
         std::string available_player = find_available_interrupter(call_time);
         if (shotcall_callback_) {
             std::string full_callout = callout;
-            if (!available_player.empty())
+            if (!available_player.empty()) {
                 full_callout = available_player + " " + callout;
+            }
             shotcall_callback_(enemy_id, full_callout);
         }
         shot_call_queue_.pop_front();
@@ -179,75 +173,50 @@ void ShotCallEngine::process_shotcalls() {
 }
 
 void ShotCallEngine::identify_player(const CombatEvent& event) {
-    std::string p_class = get_player_class(event.spell_id);
-    if (p_class.empty())
+    std::string p_class{ Constants::get_class_from_identifying_spells(event.spell_id) };
+    if (p_class.empty()) {
         return;
+    }
 
-    int interrupt_id = Constants::GetInterruptId(p_class);
-    ch::seconds interrupt_cooldown = Constants::GetInterruptCd(p_class);
-    AbilityState interrupt(interrupt_id, interrupt_cooldown);
+    int interrupt_id = Constants::get_interrupt_id(p_class);
+    ch::seconds interrupt_cooldown = Constants::get_interrupt_cd(p_class);
+    AbilityState interrupt{ interrupt_id, interrupt_cooldown };
     std::map<int, AbilityState> crowd_control_m = get_crowd_control_m(p_class);
-    Player new_player(event.source_id, event.name, p_class, interrupt, crowd_control_m);
+    Player new_player{ event.source_id, event.name, p_class, interrupt, crowd_control_m };
     roster_.emplace(event.source_id, new_player);
     roster_interrupts_.emplace(event.source_id, interrupt);
     roster_crowd_control_.emplace(event.source_id, crowd_control_m);
 }
 
 bool is_battle_rez(int spell_id) {
-    return Constants::IsBattleRez(spell_id);
+    return Constants::is_battle_rez(spell_id);
 }
 
 void ShotCallEngine::identify_enemy(const CombatEvent& event) {
-    if (event.npc_id.empty() || !Constants::IsTrackedEnemy(event.npc_id))
+    if (event.npc_id.empty() || !Constants::is_tracked_enemy(event.npc_id)) {
         return;
+    }
 
     std::vector<EnemyAbility> spells;
-    for (const auto& entry : Constants::kEnemyData) {
+    for (const auto& entry : Constants::enemy_data) {
         if (entry.enemy_id == event.npc_id) {
             spells.emplace_back(entry.spell_id, ch::milliseconds(entry.first_cast_ms),
                                 ch::milliseconds(entry.cooldown_ms), std::string(entry.callout),
                                 entry.is_interruptable);
         }
     }
-    bool is_ccable = Constants::IsEnemyCcable(event.npc_id);
-    Enemy new_enemy(event.source_id, spells, event.time_stamp, is_ccable);
+    bool is_ccable = Constants::is_enemy_ccable(event.npc_id);
+    Enemy new_enemy{ event.source_id, spells, event.time_stamp, is_ccable };
     enemy_roster_.emplace(event.source_id, new_enemy);
     ShotCallEngine::generate_shotcalls(new_enemy);
 }
 
-std::string ShotCallEngine::get_player_class(int spell_id) {
-    return std::string(Constants::GetClassFromIdentifyingSpells(spell_id));
-}
-
-bool is_ignorable_event(const std::string& event_type) {
-    return Constants::IsIgnorableEvent(event_type);
-}
-
-bool is_interrupt(int spell_id) {
-    for (const auto& [class_name, id, cd] : Constants::kInterruptData) {
-        if (id == spell_id)
-            return true;
-    }
-    return false;
-}
-
-int get_interrupt_id(const std::string& p_class) {
-    return Constants::GetInterruptId(p_class);
-}
-
-bool is_crowd_control(int spell_id) {
-    for (const auto& [class_name, spell_name, id, cd] : Constants::kCrowdControlData) {
-        if (id == spell_id)
-            return true;
-    }
-    return false;
-}
-
 std::map<int, AbilityState> get_crowd_control_m(const std::string& p_class) {
-    std::map<int, AbilityState> new_map;
-    for (const auto& [class_name, spell_name, id, cd] : Constants::kCrowdControlData) {
-        if (class_name == p_class)
-            new_map[id] = AbilityState(id, cd);
+    std::map<int, AbilityState> new_map{};
+    for (const auto& [class_name, spell_name, id, cd] : Constants::crowd_control_data) {
+        if (class_name == p_class) {
+            new_map[id] = AbilityState{ id, cd };
+        }
     }
     return new_map;
 }

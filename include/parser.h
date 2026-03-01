@@ -8,10 +8,8 @@
 #include <string>
 #include <vector>
 
-namespace ch = std::chrono;
-
 struct CombatEvent {
-    ch::system_clock::time_point time_stamp;
+    std::chrono::system_clock::time_point time_stamp;
     std::string event_type;
     std::string name;
     std::string source_id;
@@ -19,7 +17,7 @@ struct CombatEvent {
     std::string source_raid_flag;
     std::string spell_name;
     std::string npc_id;
-    int spell_id{};
+    int spell_id;
 };
 
 CombatEvent parse_line(const std::string& string);

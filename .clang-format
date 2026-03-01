@@ -11,5 +11,6 @@ AllowShortFunctionsOnASingleLine: Empty
 AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
 BreakBeforeBraces: Attach
+Cpp11BracedListStyle: false
 # cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 # ln -sF build/compile_commands.json .
