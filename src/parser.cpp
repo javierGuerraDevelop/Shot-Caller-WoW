@@ -21,7 +21,7 @@ ch::time_point<ch::system_clock> parse_timestamp(const std::string& timestamp) {
 
     std::tm tm;
     std::stringstream stream{ date_time_part };
-    stream >> std::get_time(&tm, "%m/%d/%Y/%H/%M/%S");
+    stream >> std::get_time(&tm, "%m/%d/%Y %H:%M:%S");
 
     time_t time = std::mktime(&tm);
     auto time_point = ch::system_clock::from_time_t(time);

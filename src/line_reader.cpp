@@ -41,55 +41,31 @@ std::string get_latest_combat_log(const std::string& logs_directory) {
     return latest_file;
 }
 
-void trim_whitespace(std::string& str) {
-    const std::string WHITESPACE = " \n\r\t\f\v";
-    size_t end = str.find_last_not_of(WHITESPACE);
-    if (end == std::string::npos) {
-        str.clear();
+void monitor_file(const std::string& filename, ShotCallEngine& engine) {
+    std::ifstream log_file{filename};
+    if (!log_file.is_open()) {
+        std::cerr << "Failed to open combat log: " << filename << std::endl;
         return;
     }
-    str.erase(end + 1);
+    log_file.seekg(0, std::ios::end);
+    std::cout << "Monitoring: " << filename << std::endl;
 
-    size_t start = str.find_first_not_of(WHITESPACE);
-    str.erase(0, start);
-}
-
-std::vector<std::string> read_file(const std::string& filename) {
-    std::vector<std::string> lines;
-    std::ifstream input_file{ filename };
-    if (!input_file.is_open()) {
-        std::cerr << "Error opening file" << filename << std::endl;
-        return std::vector<std::string>{};
-    }
-
-    std::string line;
-    while (std::getline(input_file, line)) {
-        trim_whitespace(line);
-        lines.push_back(line);
-    }
-    return lines;
-}
-
-void monitor_file(const std::string& filename, std::vector<std::string> lines) {
-    std::ifstream input_file{ filename };
-    if (!input_file.is_open()) {
-        std::cerr << "Error opening file: " << filename << "\n";
-        return;
-    }
-
-    input_file.seekg(0, std::ios::end);
-    std::cout << "Monitoring for new lines in: " << filename << "...\n";
     std::string line;
     while (true) {
-        if (std::getline(input_file, line)) {
-            trim_whitespace(line);
-            if (!line.empty()) {
-                std::cout << line << std::endl;
-                lines.push_back(line);
+        if (std::getline(log_file, line)) {
+            if (!line.empty() && line.back() == '\r') {
+                line.pop_back();
+            }
+            if (line.empty()) {
+                continue;
+            }
+            CombatEvent event{parse_line(line)};
+            if (!event.event_type.empty()) {
+                engine.handle_event(event);
             }
         } else {
-            input_file.clear();
-            input_file.seekg(0, std::ios::cur);
+            log_file.clear();
+            log_file.seekg(0, std::ios::cur);
             std::this_thread::sleep_for(ch::milliseconds(250));
         }
     }

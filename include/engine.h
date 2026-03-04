@@ -6,6 +6,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -88,28 +89,17 @@ class ShotCallEngine {
     void set_shotcall_callback(
         std::function<void(const std::string&, const std::string&)> callback);
 
-    static std::string get_player_class(int spell_id);
-
-    const std::map<std::string, Player>& get_roster() const {
-        return roster_;
-    }
-    const std::map<std::string, Enemy>& get_enemy_roster() const {
-        return enemy_roster_;
-    }
-    size_t get_shotcall_queue_size() const {
-        return shot_call_queue_.size();
-    }
-
    private:
     std::string find_available_interrupter(const ch::time_point<ch::system_clock>& call_time);
+    std::string find_available_ccer(const ch::time_point<ch::system_clock>& call_time);
     std::function<void(const std::string&, const std::string&)> shotcall_callback_;
 
+    std::mutex mtx_;
     std::map<std::string, Player> roster_;
     std::map<std::string, AbilityState> roster_interrupts_;
     std::map<std::string, std::map<int, AbilityState>> roster_crowd_control_;
-    ch::time_point<ch::system_clock> current_time_;
     std::map<std::string, Enemy> enemy_roster_;
-    std::list<std::tuple<std::string, std::string, ch::time_point<ch::system_clock>>>
+    std::list<std::tuple<bool, std::string, std::string, ch::time_point<ch::system_clock>>>
         shot_call_queue_;
 };
 

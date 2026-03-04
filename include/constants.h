@@ -121,12 +121,12 @@ constexpr bool is_ignorable_event(std::string_view event) {
     return false;
 }
 
-inline constexpr std::array<std::tuple<std::string_view, int, std::chrono::seconds>, 15>
+inline constexpr std::array<std::tuple<std::string_view, int, std::chrono::seconds>, 14>
     interrupt_data{ {
         { "Death Knight", 47528, std::chrono::seconds{ 15 } },   // Mind Freeze
         { "Demon Hunter", 183752, std::chrono::seconds{ 15 } },  // Disrupt
-        { "Druid", 78675, std::chrono::seconds{ 60 } },          // Druid (Moonkin)
         { "Druid", 106839, std::chrono::seconds{ 15 } },         // Skull Bash (Main kick)
+        { "Druid", 78675, std::chrono::seconds{ 60 } },          // Druid (Moonkin)
         { "Evoker", 351338, std::chrono::seconds{ 20 } },        // Quell
         { "Hunter", 187707, std::chrono::seconds{ 15 } },        // Muzzle
         { "Mage", 2139, std::chrono::seconds{ 24 } },            // Counterspell
@@ -159,15 +159,8 @@ constexpr std::chrono::seconds get_interrupt_cd(std::string_view player_class) {
     return {};
 }
 
-enum CcEnum : size_t {
-    cc_class_name = 0,
-    cc_spell_name = 1,
-    cc_spell_id = 2,
-    cc_spell_cd = 3,
-};
-
 inline constexpr std::array<
-    std::tuple<std::string_view, std::string_view, int, std::chrono::seconds>, 31>
+    std::tuple<std::string_view, std::string_view, int, std::chrono::seconds>, 29>
     crowd_control_data{
         { { "Death Knight", "Blinding Sleet", 207127, std::chrono::seconds{ 60 } },
           { "Death Knight", "Gorefiend's Grasp", 207167, std::chrono::seconds{ 90 } },
@@ -199,26 +192,6 @@ inline constexpr std::array<
           { "Warrior", "Intimidating Shout", 5246, std::chrono::seconds{ 90 } },
           { "Warrior", "Shockwave", 46968, std::chrono::seconds{ 40 } } }
     };
-
-constexpr std::chrono::seconds get_cc_cd(int id) {
-    for (const auto& [class_name, spell_name, spell_id, spell_cd] : crowd_control_data) {
-        if (id == spell_id) {
-            return spell_cd;
-        }
-    }
-
-    return {};
-}
-
-constexpr std::string_view get_cc_name(int id) {
-    for (const auto& [class_name, spell_name, spell_id, spell_cd] : crowd_control_data) {
-        if (id == spell_id) {
-            return spell_name;
-        }
-    }
-
-    return {};
-}
 
 inline constexpr std::array<int, 5> battle_rez_ids{ 10609, 376999, 20707, 61999, 407133 };
 
