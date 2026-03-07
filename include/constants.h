@@ -1,3 +1,7 @@
+// Static WoW game data: class-identifying spells, interrupt/CC abilities and
+// cooldowns, battle rez spell IDs, enemy ability timings, and combat log event
+// filters. All data is constexpr for compile-time evaluation.
+
 #ifndef SHOTCALLERENGINEWOW_CONSTANTS_H
 #define SHOTCALLERENGINEWOW_CONSTANTS_H
 
@@ -7,57 +11,47 @@
 
 namespace Constants {
 
-inline constexpr std::array<std::pair<int, std::string_view>, 37> identifying_spells{ {
+inline constexpr std::array<std::pair<int, std::string_view>, 27> identifying_spells{ {
     // Death Knight
-    { 48743, "Death Knight" },  // Death's Advance (all specs)
-    { 49998, "Death Knight" },  // Death Strike (all specs)
-    { 47541, "Death Knight" },  // Death Coil (Unholy)
+    { 48743, "Death Knight" },  // Death's Advance (all specs, movement)
+    { 48707, "Death Knight" },  // Anti-Magic Shell (all specs, defensive)
     // Demon Hunter
-    { 198013, "Demon Hunter" },  // Eye Beam (Havoc)
-    { 185123, "Demon Hunter" },  // Throw Glaive (all specs)
-    { 162794, "Demon Hunter" },  // Chaos Strike (Havoc)
+    { 258920, "Demon Hunter" },  // Immolation Aura (all specs)
+    { 198793, "Demon Hunter" },  // Vengeful Retreat (all specs, movement)
     // Druid
-    { 1126, "Druid" },  // Mark of the Wild (all specs)
-    { 8921, "Druid" },  // Moonfire (all specs)
-    { 8936, "Druid" },  // Regrowth (all specs)
+    { 1126, "Druid" },  // Mark of the Wild (all specs, buff)
+    { 8936, "Druid" },  // Regrowth (all specs, self-heal)
     // Evoker
-    { 364342, "Evoker" },  // Blessing of the Bronze (all specs)
-    { 361469, "Evoker" },  // Living Flame (all specs)
+    { 364342, "Evoker" },  // Blessing of the Bronze (all specs, buff)
+    { 361469, "Evoker" },  // Living Flame (all specs, heal/damage)
     // Hunter
-    { 5384, "Hunter" },    // Feign Death (all specs)
-    { 34026, "Hunter" },   // Kill Command (BM/Survival)
-    { 185358, "Hunter" },  // Arcane Shot (BM/MM)
+    { 5384, "Hunter" },  // Feign Death (all specs)
     // Mage
-    { 1459, "Mage" },    // Arcane Intellect (all specs)
-    { 108853, "Mage" },  // Fire Blast (Fire/Frost)
-    { 116, "Mage" },     // Frostbolt (Frost)
-    { 133, "Mage" },     // Fireball (Fire)
+    { 1459, "Mage" },    // Arcane Intellect (all specs, buff)
+    { 1953, "Mage" },    // Blink (all specs, movement)
+    { 212653, "Mage" },  // Shimmer (all specs, talent replaces Blink)
     // Monk
-    { 116670, "Monk" },  // Vivify (all specs)
-    { 100780, "Monk" },  // Tiger Palm (all specs)
-    { 107428, "Monk" },  // Rising Sun Kick (WW/MW)
+    { 116670, "Monk" },  // Vivify (all specs, self-heal)
+    { 109132, "Monk" },  // Roll (all specs, movement)
+    { 115008, "Monk" },  // Chi Torpedo (all specs, talent replaces Roll)
     // Paladin
-    { 19750, "Paladin" },   // Flash of Light (Holy)
-    { 275773, "Paladin" },  // Judgment (all specs)
-    { 35395, "Paladin" },   // Crusader Strike (Ret/Prot)
+    { 19750, "Paladin" },   // Flash of Light (all specs, self-heal)
+    { 190784, "Paladin" },  // Divine Steed (all specs, movement)
     // Priest
-    { 21562, "Priest" },  // Power Word: Fortitude (all specs)
-    { 585, "Priest" },    // Smite (all specs)
-    { 8092, "Priest" },   // Mind Blast (all specs)
+    { 21562, "Priest" },  // Power Word: Fortitude (all specs, buff)
+    { 2061, "Priest" },   // Flash Heal (all specs, self-heal)
     // Rogue
     { 1784, "Rogue" },    // Stealth (all specs)
-    { 196819, "Rogue" },  // Eviscerate (all specs)
+    { 36554, "Rogue" },   // Shadowstep (all specs, movement)
     // Shaman
-    { 10613, "Shaman" },   // Windfury Totem (Enhancement)
-    { 188196, "Shaman" },  // Lightning Bolt (all specs)
-    { 51505, "Shaman" },   // Lava Burst (Ele/Resto)
+    { 8004, "Shaman" },    // Healing Surge (all specs, self-heal)
+    { 462854, "Shaman" },  // Skyfury (all specs, mastery buff)
     // Warlock
-    { 686, "Warlock" },    // Shadow Bolt (Affliction/Demo)
-    { 29722, "Warlock" },  // Incinerate (Destruction)
+    { 111771, "Warlock" },  // Demonic Gateway (all specs, movement utility)
+    { 29893, "Warlock" },   // Create Soulwell (all specs, healthstone well)
     // Warrior
-    { 6673, "Warrior" },   // Battle Shout (all specs)
-    { 12294, "Warrior" },  // Mortal Strike (Arms)
-    { 23922, "Warrior" },  // Shield Slam (Protection)
+    { 6673, "Warrior" },  // Battle Shout (all specs, buff)
+    { 6544, "Warrior" },  // Heroic Leap (all specs, movement)
 } };
 
 constexpr std::string_view get_class_from_identifying_spells(int spell_id) {

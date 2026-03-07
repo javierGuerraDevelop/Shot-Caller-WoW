@@ -1,3 +1,6 @@
+// Entry point. Sets up output file and socket callbacks, starts the shotcall
+// processing thread, then tail-follows the latest WoW combat log.
+
 #include <fstream>
 #include <iostream>
 #include <thread>
@@ -5,6 +8,7 @@
 #include "engine.h"
 #include "line_reader.h"
 #include "line_writer.h"
+#include "socket_sender.h"
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -20,9 +24,16 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "Writing shotcalls to: " << output_path << std::endl;
 
-    // Wire engine callback to write shotcalls to file
+    // Wire engine callback to write shotcalls to file and send over socket
+    auto file_writer = make_shotcall_writer(output_file);
+    auto socket_sender = make_socket_sender();
+
     ShotCallEngine engine{};
-    engine.set_shotcall_callback(make_shotcall_writer(output_file));
+    engine.set_shotcall_callback(
+        [file_writer, socket_sender](const std::string& enemy_id, const std::string& callout) {
+            file_writer(enemy_id, callout);
+            socket_sender(enemy_id, callout);
+        });
 
     // Run process_shotcalls on a background thread
     std::thread shotcall_thread([&engine]() { engine.process_shotcalls(); });

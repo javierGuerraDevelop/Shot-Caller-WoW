@@ -2,6 +2,8 @@
 
 namespace ch = std::chrono;
 
+// Parses "MM/DD/YYYY HH:MM:SS.mmm+TZ" into a system_clock time_point.
+// Returns default time_point on malformed input.
 ch::time_point<ch::system_clock> parse_timestamp(const std::string& timestamp) {
     size_t time_zone_pos = timestamp.find_last_of("+-");
     if (time_zone_pos == std::string::npos) {
@@ -35,6 +37,8 @@ void strip_quotes(std::string& str) {
     str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
 }
 
+// Extracts the NPC ID from a Creature GUID (e.g. "Creature-0-...-12345-...").
+// Returns empty string for non-Creature GUIDs.
 std::string extract_npc_id(const std::string& guid) {
     if (guid.rfind("Creature", 0) != 0) {
         return {};
@@ -57,6 +61,8 @@ std::string extract_npc_id(const std::string& guid) {
     return guid.substr(pos, end - pos);
 }
 
+// Splits a combat log line by commas and extracts relevant fields.
+// Lines with fewer than 11 fields are treated as unparseable.
 CombatEvent parse_line(const std::string& line) {
     if (line.empty()) {
         return CombatEvent{};

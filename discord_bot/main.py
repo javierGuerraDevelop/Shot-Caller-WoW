@@ -1,3 +1,9 @@
+"""Discord bot that receives shotcalls from the C++ engine over TCP and plays
+them as TTS audio in a voice channel using ElevenLabs.
+
+Requires environment variables: ELEVENLABS_API_KEY, DISCORD_BOT_TOKEN
+"""
+
 import discord
 from discord.ext import commands
 import asyncio
@@ -6,15 +12,13 @@ import socket
 import threading
 from elevenlabs.client import ElevenLabs
 from elevenlabs import VoiceSettings
-
-# Bot setup
 intents = discord.Intents.default()
 intents.message_content = True
 intents.voice_states = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # ElevenLabs setup
-ELEVENLABS_API_KEY = "YOUR_ELEVENLABS_API_KEY"
+ELEVENLABS_API_KEY = os.environ["ELEVENLABS_API_KEY"]
 client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 
 # Popular voice IDs
@@ -80,14 +84,14 @@ def socket_server():
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(("localhost", 9999))
     server.listen(5)
-    print("🔌 Socket server listening on localhost:9999...")
+    print("Socket server listening on localhost:9999...")
 
     while True:
         try:
             conn, addr = server.accept()
             data = conn.recv(4096).decode("utf-8")
             if data:
-                print(f"📨 Received from C++: {data}")
+                print(f"Received from C++: {data}")
                 # Add message to bot's event loop
                 asyncio.run_coroutine_threadsafe(
                     speak_from_cpp(data), bot.loop)
@@ -104,14 +108,14 @@ async def speak_from_cpp(text):
             await speak_text(text, vc)
             break
     else:
-        print("⚠️ Bot not connected to any voice channel")
+        print("Warning: Bot not connected to any voice channel")
 
 
 @bot.event
 async def on_ready():
-    print(f"✅ {bot.user} is now running!")
-    print(f"🎙️ Current voice: {current_voice}")
-    print(f'📋 Available voices: {", ".join(VOICES.keys())}')
+    print(f"{bot.user} is now running!")
+    print(f"Current voice: {current_voice}")
+    print(f'Available voices: {", ".join(VOICES.keys())}')
 
     # Start socket server in separate thread
     threading.Thread(target=socket_server, daemon=True).start()
@@ -123,9 +127,9 @@ async def join(ctx):
     if ctx.author.voice:
         channel = ctx.author.voice.channel
         await channel.connect()
-        await ctx.send(f"✅ Joined {channel.name}!")
+        await ctx.send(f"Joined {channel.name}!")
     else:
-        await ctx.send("❌ You need to be in a voice channel!")
+        await ctx.send("You need to be in a voice channel!")
 
 
 @bot.command()
@@ -133,28 +137,28 @@ async def leave(ctx):
     """Leave the voice channel"""
     if ctx.voice_client:
         await ctx.voice_client.disconnect()
-        await ctx.send("👋 Left the voice channel!")
+        await ctx.send("Left the voice channel!")
     else:
-        await ctx.send("❌ I'm not in a voice channel!")
+        await ctx.send("I'm not in a voice channel!")
 
 
 @bot.command()
 async def say(ctx, *, text: str):
     """Make the bot speak text in voice channel"""
     if not ctx.voice_client:
-        await ctx.send("❌ I'm not in a voice channel! Use !join first.")
+        await ctx.send("I'm not in a voice channel! Use !join first.")
         return
 
     if len(text) > 500:
-        await ctx.send("❌ Text too long! Max 500 characters.")
+        await ctx.send("Text too long! Max 500 characters.")
         return
 
     try:
-        await ctx.send(f"🔊 Speaking: *{text[:50]}{'...' if len(text) > 50 else ''}*")
+        await ctx.send(f"Speaking: *{text[:50]}{'...' if len(text) > 50 else ''}*")
         await speak_text(text, ctx.voice_client)
 
     except Exception as e:
-        await ctx.send(f"❌ Error: {str(e)}")
+        await ctx.send(f"Error: {str(e)}")
 
 
 @bot.command()
@@ -165,15 +169,15 @@ async def voice(ctx, voice_name: str = None):
     if voice_name is None:
         voice_list = "\n".join(
             [f"**{name}** - {get_voice_description(name)}" for name in VOICES.keys()])
-        await ctx.send(f"🎙️ **Current voice:** {current_voice}\n\n**Available voices:**\n{voice_list}")
+        await ctx.send(f"**Current voice:** {current_voice}\n\n**Available voices:**\n{voice_list}")
         return
 
     voice_name = voice_name.lower()
     if voice_name in VOICES:
         current_voice = voice_name
-        await ctx.send(f"✅ Voice changed to: **{current_voice}**")
+        await ctx.send(f"Voice changed to: **{current_voice}**")
     else:
-        await ctx.send(f"❌ Invalid voice! Use `!voice` to see available voices.")
+        await ctx.send("Invalid voice! Use `!voice` to see available voices.")
 
 
 def get_voice_description(voice_name):
@@ -195,4 +199,4 @@ def get_voice_description(voice_name):
 
 # Run the bot
 if __name__ == "__main__":
-    bot.run("YOUR_DISCORD_BOT_TOKEN")
+    bot.run(os.environ["DISCORD_BOT_TOKEN"])

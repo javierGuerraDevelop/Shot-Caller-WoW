@@ -1,3 +1,8 @@
+// Parses WoW combat log lines into structured CombatEvent data.
+// Each line contains a timestamp, event type, source/target GUIDs, flags,
+// and spell information. The parser extracts NPC IDs from Creature GUIDs
+// for enemy identification.
+
 #ifndef SHOTCALLERCPP_PARSER_H
 #define SHOTCALLERCPP_PARSER_H
 
