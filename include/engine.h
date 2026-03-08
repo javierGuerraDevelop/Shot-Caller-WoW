@@ -96,6 +96,8 @@ class ShotCallEngine {
     void generate_shotcalls(Enemy& enemy);
     // Runs on a background thread; dispatches queued shotcalls at their scheduled time.
     void process_shotcalls();
+    // Dispatches the next shotcall if one is due. Returns true if a shotcall was dispatched.
+    bool dispatch_next_shotcall(ch::time_point<ch::system_clock> now);
 
     void set_shotcall_callback(
         std::function<void(const std::string&, const std::string&)> callback);

@@ -12,6 +12,7 @@ import socket
 import threading
 from elevenlabs.client import ElevenLabs
 from elevenlabs import VoiceSettings
+
 intents = discord.Intents.default()
 intents.message_content = True
 intents.voice_states = True
@@ -47,8 +48,7 @@ async def speak_text(text, voice_client):
             text=text,
             voice=VOICES[current_voice],
             model="eleven_turbo_v2",  # Faster model for real-time
-            voice_settings=VoiceSettings(
-                stability=0.5, similarity_boost=0.75, style=0.0, use_speaker_boost=True),
+            voice_settings=VoiceSettings(stability=0.5, similarity_boost=0.75, style=0.0, use_speaker_boost=True),
         )
 
         # Collect audio chunks
@@ -93,8 +93,7 @@ def socket_server():
             if data:
                 print(f"Received from C++: {data}")
                 # Add message to bot's event loop
-                asyncio.run_coroutine_threadsafe(
-                    speak_from_cpp(data), bot.loop)
+                asyncio.run_coroutine_threadsafe(speak_from_cpp(data), bot.loop)
             conn.close()
         except Exception as e:
             print(f"Socket error: {e}")
@@ -167,8 +166,7 @@ async def voice(ctx, voice_name: str = None):
     global current_voice
 
     if voice_name is None:
-        voice_list = "\n".join(
-            [f"**{name}** - {get_voice_description(name)}" for name in VOICES.keys()])
+        voice_list = "\n".join([f"**{name}** - {get_voice_description(name)}" for name in VOICES.keys()])
         await ctx.send(f"**Current voice:** {current_voice}\n\n**Available voices:**\n{voice_list}")
         return
 

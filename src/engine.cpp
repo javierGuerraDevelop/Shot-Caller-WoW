@@ -158,58 +158,62 @@ void ShotCallEngine::set_shotcall_callback(
     shotcall_callback_ = callback;
 }
 
+bool ShotCallEngine::dispatch_next_shotcall(ch::time_point<ch::system_clock> now) {
+    std::unique_lock<std::mutex> lock(mtx_);
+    if (shot_call_queue_.empty()) {
+        return false;
+    }
+
+    const bool interruptable = std::get<0>(shot_call_queue_.front());
+    const std::string enemy_id = std::get<1>(shot_call_queue_.front());
+    const std::string callout = std::get<2>(shot_call_queue_.front());
+    const auto call_time = std::get<3>(shot_call_queue_.front());
+    auto time_until_call = ch::duration_cast<ch::milliseconds>(call_time - now);
+    if (time_until_call.count() < 0) {
+        shot_call_queue_.pop_front();
+        return false;
+    }
+    if (time_until_call.count() > 1000) {
+        return false;
+    }
+
+    auto enemy_it = enemy_roster_.find(enemy_id);
+    if (enemy_it == enemy_roster_.end()) {
+        shot_call_queue_.pop_front();
+        return false;
+    }
+
+    std::string available_player;
+    if (interruptable) {
+        available_player = find_available_interrupter(call_time);
+    } else {
+        if (!enemy_it->second.is_ccable) {
+            shot_call_queue_.pop_front();
+            return false;
+        }
+        available_player = find_available_ccer(call_time);
+    }
+    shot_call_queue_.pop_front();
+    lock.unlock();
+    if (shotcall_callback_) {
+        std::string full_callout = callout;
+        if (!available_player.empty()) {
+            full_callout = available_player + " " + callout;
+        }
+        shotcall_callback_(enemy_id, full_callout);
+    }
+
+    return true;
+}
+
 void ShotCallEngine::process_shotcalls() {
     while (true) {
-        std::unique_lock<std::mutex> lock(mtx_);
-        if (shot_call_queue_.empty()) {
-            lock.unlock();
+        auto now = ch::system_clock::now();
+        if (!dispatch_next_shotcall(now)) {
             std::this_thread::sleep_for(ch::milliseconds(250));
-            continue;
-        }
-
-        const bool interruptable = std::get<0>(shot_call_queue_.front());
-        const std::string enemy_id = std::get<1>(shot_call_queue_.front());
-        const std::string callout = std::get<2>(shot_call_queue_.front());
-        const auto call_time = std::get<3>(shot_call_queue_.front());
-        auto time_now = ch::system_clock::now();
-        auto time_until_call = ch::duration_cast<ch::milliseconds>(call_time - time_now);
-        if (time_until_call.count() < 0) {
-            shot_call_queue_.pop_front();
-            continue;
-        }
-        if (time_until_call.count() > 1000) {
-            lock.unlock();
-            std::this_thread::sleep_for(ch::milliseconds(time_until_call.count() - 1000));
-            continue;
-        }
-
-        auto enemy_it = enemy_roster_.find(enemy_id);
-        if (enemy_it == enemy_roster_.end()) {
-            shot_call_queue_.pop_front();
-            continue;
-        }
-
-        std::string available_player;
-        if (interruptable) {
-            available_player = find_available_interrupter(call_time);
         } else {
-            if (!enemy_it->second.is_ccable) {
-                shot_call_queue_.pop_front();
-                continue;
-            }
-            available_player = find_available_ccer(call_time);
+            std::this_thread::sleep_for(ch::milliseconds(100));
         }
-        shot_call_queue_.pop_front();
-        lock.unlock();
-        if (shotcall_callback_) {
-            std::string full_callout = callout;
-            if (!available_player.empty()) {
-                full_callout = available_player + " " + callout;
-            }
-            shotcall_callback_(enemy_id, full_callout);
-        }
-
-        std::this_thread::sleep_for(ch::milliseconds(100));
     }
 }
 
